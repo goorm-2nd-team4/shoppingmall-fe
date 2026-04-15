@@ -31,11 +31,16 @@ npm install @vapor-ui/core @vapor-ui/icons
 - `typescript`
 - `@typescript-eslint/parser`
 - `@typescript-eslint/eslint-plugin`
+- `husky`
+- `@commitlint/cli`
+- `@commitlint/config-conventional`
 
 ### 관련 설정 파일
 
 - `package.json`: lint/format 스크립트 및 개발 의존성
 - `eslint.config.js`: JavaScript, JSX, TypeScript, TSX용 ESLint 설정
+- `commitlint.config.cjs`: 커밋 메시지 규칙
+- `.husky/commit-msg`: 커밋 메시지 검사용 Git hook
 - `.prettierrc.json`: Prettier 규칙
 - `.prettierignore`: Prettier 제외 대상
 - `.gitignore`: Git 추적 제외 파일
@@ -73,6 +78,44 @@ Prettier 검사만 실행:
 ```bash
 npm run format:check
 ```
+
+Husky hook 설치:
+
+```bash
+npm run prepare
+```
+
+### 커밋 메시지 규칙
+
+커밋 메시지는 대문자 타입을 대괄호로 감싼 형식을 따릅니다.
+
+예시:
+
+```text
+[FEAT] add product card component
+[FIX] handle empty cart state
+[DOCS] update dev setup guide
+[CHORE] configure commitlint and husky
+```
+
+형식:
+
+```text
+[TYPE] subject
+```
+
+자주 쓰는 `type`:
+
+- `FEAT`
+- `FIX`
+- `ADD`
+- `UPDATE`
+- `REMOVE`
+- `REFACTOR`
+- `DOCS`
+- `STYLE`
+- `TEST`
+- `CHORE`
 
 ### GitHub Actions
 

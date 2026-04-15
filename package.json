@@ -27,6 +27,8 @@
     "vite": "^8.0.8"
   },
   "dependencies": {
+    "@vapor-ui/core": "^1.2.1",
+    "@vapor-ui/icons": "^1.2.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   }

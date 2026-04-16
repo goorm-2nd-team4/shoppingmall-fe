@@ -14,7 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 /** 인증 상태 Provider */
-export function AuthProvider({ child }: { child: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,7 +61,7 @@ export function AuthProvider({ child }: { child: ReactNode }) {
         logout,
       }}
     >
-      {child}
+      {children}
     </AuthContext.Provider>
   );
 }

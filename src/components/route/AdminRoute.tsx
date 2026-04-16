@@ -7,7 +7,7 @@ import React from 'react';
  * 비로그인 시 로그인 페이지로 리다이렉트
  * USER 접근 시 메인페이지로 리다이렉트
  */
-export function AdminRoute({ child }: { child: React.ReactNode }) {
+export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isAdmin } = useAuth();
 
   if (isLoading)
@@ -19,5 +19,5 @@ export function AdminRoute({ child }: { child: React.ReactNode }) {
   if (!user) return <Navigate to='/login' replace />;
   if (!isAdmin) return <Navigate to='/' replace />;
 
-  return <>{child}</>;
+  return <>{children}</>;
 }

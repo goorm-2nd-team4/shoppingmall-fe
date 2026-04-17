@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: 1,
       user_email,
       user_name: 'goorm',
-      user_role: user_email === 'admin@goorm.com' ? 'ADMIN' : 'USER',
+      user_role: user_email === 'admin@goorm.io' ? 'ADMIN' : 'USER',
     };
 
     localStorage.setItem('token', 'mockToken');

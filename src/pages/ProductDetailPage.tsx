@@ -21,7 +21,7 @@ const ProductDetailPage = () => {
             product_name: '테스트 상품 ' + id,
             product_price: 39000,
             product_category: 'tech',
-            product_stock: 10
+            stock: 10
           });
         });
     }
@@ -39,7 +39,7 @@ const ProductDetailPage = () => {
         <div className="w-full md:w-1/2 flex flex-col gap-6">
           <Text className="text-3xl font-bold block">{product.product_name}</Text>
           <Text className="text-2xl text-blue-600 font-bold block">{product.product_price.toLocaleString()}원</Text>
-          <Text className="text-gray-500 block">무료 배송 | 재고 {product.product_stock}개 남음</Text>
+          <Text className="text-gray-500 block">무료 배송 | 재고 {product.stock}개 남음</Text>
           <div className="flex gap-4 mt-auto">
             <Button className="flex-1 h-12" variant="outline" onClick={() => { alert('장바구니에 담겼습니다!'); navigate('/cart'); }}>
               장바구니

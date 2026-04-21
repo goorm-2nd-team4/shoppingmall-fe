@@ -13,8 +13,8 @@ const MainPage = () => {
   useEffect(() => {
     productAPI.getAll().then(res => setProducts(res.data.data)).catch(() => {
       setProducts([
-        { id: 1, product_name: '사과', product_price: 1000, product_category: 'food', product_stock: 50 },
-        { id: 2, product_name: '키보드', product_price: 39000, product_category: 'tech', product_stock: 10 },
+        { id: 1, product_name: '사과', product_price: 1000, product_category: 'food', stock: 50 },
+        { id: 2, product_name: '키보드', product_price: 39000, product_category: 'tech', stock: 10 },
       ]);
     });
   }, []);
@@ -48,7 +48,7 @@ const MainPage = () => {
               <Text className="block font-bold text-lg mb-1">{p.product_name}</Text>
               <Text className="block text-blue-600 font-bold text-xl">{p.product_price.toLocaleString()}원</Text>
               <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
-                <Text className="text-sm text-gray-500">재고: {p.product_stock}개</Text>
+                <Text className="text-sm text-gray-500">재고: {p.stock}개</Text>
                 <Text className="text-blue-500 text-sm font-medium">상세보기 →</Text>
               </div>
             </div>

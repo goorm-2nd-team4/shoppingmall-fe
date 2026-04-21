@@ -43,3 +43,12 @@ export interface ProductFormData {
   product_category: string;
   product_stock: number;
 }
+
+/*장바구니*/
+export interface CartItem {
+  id: number;
+  product_id: number;
+  product_name: string;
+  product_price: number;
+  product_count: number;
+}

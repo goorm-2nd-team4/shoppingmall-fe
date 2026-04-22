@@ -20,7 +20,7 @@ function App() {
           <Route path='/cart' element={<CartPage />} />
           <Route path='/payment' element={<PaymentPage />} />
           <Route path='/success' element={<SuccessPage />} />
-          
+
           {/* 로그인/회원가입 페이지 */}
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignupPage />} />

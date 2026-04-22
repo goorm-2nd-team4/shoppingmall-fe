@@ -11,6 +11,7 @@ export const productAPI = {
 
 export const cartAPI = {
   getList: () => api.get('/carts'),
-  add: (productId: number, count: number) => api.post('/carts', { product_id: productId, product_count: count }),
+  add: (productId: number, count: number) =>
+    api.post('/carts', { product_id: productId, product_count: count }),
   delete: (id: number) => api.delete(`/carts/${id}`),
 };

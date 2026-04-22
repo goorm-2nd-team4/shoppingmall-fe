@@ -17,7 +17,6 @@ export interface Product {
   stock: number; /* 변수명 product_stock에서 stock으로 변경 (api 명세서 기준) */
 }
 
-
 /** 로그인 요청 */
 export interface LoginRequest {
   user_email: string;

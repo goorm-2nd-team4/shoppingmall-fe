@@ -9,13 +9,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<MainPage />} />
-        <Route path="/product/:id" element={<ProductDetailPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/success" element={<SuccessPage />} />
+        <Route path='/' element={<MainPage />} />
+        <Route path='/product/:id' element={<ProductDetailPage />} />
+        <Route path='/cart' element={<CartPage />} />
+        <Route path='/payment' element={<PaymentPage />} />
+        <Route path='/success' element={<SuccessPage />} />
         {/* /login으로 연결 */}
-        <Route path="/login" element={<div className="p-10">로그인 페이지 </div>} />
+        <Route
+          path='/login'
+          element={<div className='p-10'>로그인 페이지 </div>}
+        />
       </Routes>
     </BrowserRouter>
   );

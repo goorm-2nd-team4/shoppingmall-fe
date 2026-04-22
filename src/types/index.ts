@@ -14,7 +14,7 @@ export interface Product {
   product_category: string;
 
   /** 재고 */
-  product_stock: number;
+  stock: number; /* 변수명 product_stock에서 stock으로 변경 (api 명세서 기준) */
 }
 
 /** 로그인 요청 */
@@ -42,4 +42,13 @@ export interface ProductFormData {
   product_price: number;
   product_category: string;
   product_stock: number;
+}
+
+/*장바구니*/
+export interface CartItem {
+  id: number;
+  product_id: number;
+  product_name: string;
+  product_price: number;
+  product_count: number;
 }

@@ -9,6 +9,7 @@ import SignupPage from './pages/auth/SignupPage';
 import { AdminRoute } from './components/route/AdminRoute';
 import MembersManagePage from './pages/admin/MembersManagePage';
 import ProductsManagePage from './pages/admin/ProductsManagePage';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   return (

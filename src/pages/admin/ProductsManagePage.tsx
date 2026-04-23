@@ -14,6 +14,7 @@ import {
 import {
   Badge,
   Card,
+  Collapsible,
   Dialog,
   HStack,
   IconButton,
@@ -24,6 +25,7 @@ import {
   MultiSelect,
 } from '@vapor-ui/core';
 import {
+  ChevronRightOutlineIcon,
   CloseOutlineIcon,
   PlusOutlineIcon,
   SearchOutlineIcon,
@@ -55,7 +57,8 @@ const EMPTY_FORM: ProductFormData = {
   product_name: '',
   product_price: 0,
   product_category: '',
-  product_stock: 0,
+  stock: 0,
+  product_description: '',
 };
 
 // 커스텀 필터 함수
@@ -111,6 +114,17 @@ export default function ProductsManagePage() {
 
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
+  // 펼침 행
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  const toggleExpand = (id: number) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   // 확인 다이얼로그
   const [dialog, setDialog] = useState<{
     type: 'add' | 'edit' | 'delete';
@@ -122,7 +136,7 @@ export default function ProductsManagePage() {
     if (!form.product_name.trim()) return '상품명을 입력해주세요.';
     if (form.product_price <= 0) return '가격은 0보다 커야 합니다.';
     if (!form.product_category) return '카테고리를 선택해주세요.';
-    if (form.product_stock < 0) return '재고는 0 이상이어야 합니다.';
+    if (form.stock < 0) return '재고는 0 이상이어야 합니다.';
     return null;
   };
 
@@ -133,8 +147,10 @@ export default function ProductsManagePage() {
       product_name: product.product_name,
       product_price: product.product_price,
       product_category: product.product_category,
-      product_stock: product.product_stock,
+      stock: product.stock,
+      product_description: product.product_description,
     });
+    setExpandedRows((prev) => new Set(prev).add(product.id));
   };
 
   const handleEditCancel = () => setEditingId(null);
@@ -209,7 +225,18 @@ export default function ProductsManagePage() {
         accessorKey: 'id',
         enableSorting: true,
         cell: ({ row }) => (
-          <span className='text-gray-500'>{row.original.id}</span>
+          <div className='flex items-center gap-1'>
+            <ChevronRightOutlineIcon
+              size='14px'
+              style={{
+                transform: expandedRows.has(row.original.id)
+                  ? 'rotate(90deg)'
+                  : 'rotate(0deg)',
+                transition: 'transform 0.2s ease',
+              }}
+            />
+            <span className='text-gray-500'>{row.original.id}</span>
+          </div>
         ),
       },
       {
@@ -297,24 +324,24 @@ export default function ProductsManagePage() {
       },
       {
         header: '재고',
-        accessorKey: 'product_stock',
+        accessorKey: 'stock',
         enableSorting: true,
         cell: ({ row }) =>
           editingId === row.original.id ? (
             <input
               type='number'
               min={0}
-              value={editingData.product_stock || ''}
+              value={editingData.stock || ''}
               onChange={(e) =>
                 setEditingData((prev) => ({
                   ...prev,
-                  product_stock: Number(e.target.value),
+                  stock: Number(e.target.value),
                 }))
               }
               className='border border-gray-300 rounded px-2 py-1 w-20 focus:outline-none focus:ring-2 focus:ring-blue-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
             />
           ) : (
-            row.original.product_stock
+            row.original.stock
           ),
       },
       {
@@ -355,7 +382,7 @@ export default function ProductsManagePage() {
           ),
       },
     ],
-    [editingId, editingData],
+    [editingId, editingData, expandedRows],
   );
 
   const table = useReactTable({
@@ -506,14 +533,29 @@ export default function ProductsManagePage() {
                 type='number'
                 min={0}
                 placeholder='0'
-                value={newProduct.product_stock || ''}
+                value={newProduct.stock || ''}
                 onChange={(e) =>
                   setNewProduct((prev) => ({
                     ...prev,
-                    product_stock: Number(e.target.value),
+                    stock: Number(e.target.value),
                   }))
                 }
                 className='border border-gray-300 rounded px-2 py-1 w-20 focus:outline-none focus:ring-2 focus:ring-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+              />
+            </label>
+            <label className='flex flex-col gap-1 text-sm flex-1 min-w-48'>
+              <span className='text-gray-600 font-medium'>상품설명</span>
+              <textarea
+                placeholder='상품 설명을 입력하세요'
+                rows={2}
+                value={newProduct.product_description}
+                onChange={(e) =>
+                  setNewProduct((prev) => ({
+                    ...prev,
+                    product_description: e.target.value,
+                  }))
+                }
+                className='border border-gray-300 rounded px-2 py-1 resize-none focus:outline-none focus:ring-2 focus:ring-gray-400'
               />
             </label>
             <button
@@ -580,16 +622,65 @@ export default function ProductsManagePage() {
             <Table.Body>
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <Table.Row key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <Table.Cell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                  <>
+                    <Table.Row
+                      key={row.id}
+                      $css={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        if (
+                          (e.target as HTMLElement).closest(
+                            'button, input, textarea, [role="combobox"], [role="option"], [role="listbox"]',
+                          )
+                        )
+                          return;
+                        toggleExpand(row.original.id);
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <Table.Cell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Table.Cell>
+                      ))}
+                    </Table.Row>
+                    <Table.Row key={`${row.id}-desc`}>
+                      <Table.Cell
+                        colSpan={columns.length}
+                        $css={{ padding: '$000' }}
+                      >
+                        <Collapsible.Root
+                          open={expandedRows.has(row.original.id)}
+                        >
+                          <Collapsible.Panel>
+                            <div className='flex flex-col gap-1 px-4 py-3 bg-gray-50 border-t border-gray-100'>
+                              <span className='text-xs font-medium text-gray-500'>
+                                상품설명
+                              </span>
+                              {editingId === row.original.id ? (
+                                <textarea
+                                  value={editingData.product_description}
+                                  onChange={(e) =>
+                                    setEditingData((prev) => ({
+                                      ...prev,
+                                      product_description: e.target.value,
+                                    }))
+                                  }
+                                  rows={2}
+                                  className='border border-gray-300 rounded px-2 py-1 w-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm'
+                                />
+                              ) : (
+                                <span className='text-sm text-gray-700'>
+                                  {row.original.product_description}
+                                </span>
+                              )}
+                            </div>
+                          </Collapsible.Panel>
+                        </Collapsible.Root>
                       </Table.Cell>
-                    ))}
-                  </Table.Row>
+                    </Table.Row>
+                  </>
                 ))
               ) : (
                 <Table.Row>

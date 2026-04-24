@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -17,7 +17,6 @@ import {
   Collapsible,
   Dialog,
   HStack,
-  IconButton,
   Pagination,
   Select,
   Table,
@@ -26,15 +25,14 @@ import {
 } from '@vapor-ui/core';
 import {
   ChevronRightOutlineIcon,
-  CloseOutlineIcon,
   PlusOutlineIcon,
   SearchOutlineIcon,
   ArrowDownOutlineIcon,
   ArrowUpOutlineIcon,
 } from '@vapor-ui/icons';
 import type { Product, ProductFormData } from '../../types';
-import { MOCK_PRODUCTS } from '../../mocks/mockProducts';
 import { toastManager } from '../../lib/toastManager';
+import { productAPI } from '../../api/index';
 
 // 상수
 const CATEGORIES = ['전체', '식품', '생필품', '전자제품'];
@@ -58,7 +56,7 @@ const EMPTY_FORM: ProductFormData = {
   product_price: 0,
   product_category: '',
   stock: 0,
-  product_description: '',
+  product_detail: '',
 };
 
 // 커스텀 필터 함수
@@ -96,7 +94,9 @@ function FilterSelect({ triggerLabel, ...props }: FilterSelectProps) {
 // 컴포넌트
 export default function ProductsManagePage() {
   // 상품 목록
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const [loading, setLoading] = useState(true);
 
   // 정렬
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -108,6 +108,9 @@ export default function ProductsManagePage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingData, setEditingData] = useState<ProductFormData>(EMPTY_FORM);
 
+  const editingDataRef = useRef(editingData);
+  editingDataRef.current = editingData;
+
   // 상품 추가 폼
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProduct, setNewProduct] = useState<ProductFormData>(EMPTY_FORM);
@@ -116,6 +119,21 @@ export default function ProductsManagePage() {
 
   // 펼침 행
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    productAPI
+      .getAll()
+      .then((res) => {
+        setProducts(res.data.data);
+      })
+      .catch(() => {
+        toastManager.add({
+          title: '상품 목록을 불러오지 못했습니다.',
+          colorPalette: 'danger',
+        });
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const toggleExpand = (id: number) => {
     setExpandedRows((prev) => {
@@ -137,23 +155,28 @@ export default function ProductsManagePage() {
     if (form.product_price <= 0) return '가격은 0보다 커야 합니다.';
     if (!form.product_category) return '카테고리를 선택해주세요.';
     if (form.stock < 0) return '재고는 0 이상이어야 합니다.';
+    if (!form.product_detail.trim()) return '상품 설명을 입력해주세요.';
     return null;
   };
 
   // 인라인 수정
   const handleEditStart = (product: Product) => {
+    setShowAddForm(false);
     setEditingId(product.id);
     setEditingData({
       product_name: product.product_name,
       product_price: product.product_price,
       product_category: product.product_category,
       stock: product.stock,
-      product_description: product.product_description,
+      product_detail: product.product_detail,
     });
     setExpandedRows((prev) => new Set(prev).add(product.id));
   };
 
-  const handleEditCancel = () => setEditingId(null);
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setShowAddForm(false);
+  };
 
   // 다이얼로그 오픈
   const handleEditSaveClick = (id: number) => {
@@ -183,39 +206,61 @@ export default function ProductsManagePage() {
     if (!dialog) return;
 
     if (dialog.type === 'delete' && dialog.targetId !== undefined) {
-      setProducts((prev) => prev.filter((p) => p.id !== dialog.targetId));
-      toastManager.add({
-        title: '상품이 삭제되었습니다.',
-        colorPalette: 'success',
-      });
+      productAPI
+        .delete(dialog.targetId)
+        .then(() => {
+          setProducts((prev) => prev.filter((p) => p.id !== dialog.targetId));
+          toastManager.add({
+            title: '상품이 삭제되었습니다.',
+            colorPalette: 'success',
+          });
+        })
+        .catch((err) => {
+          const message =
+            err.response?.data?.message ?? '상품 삭제에 실패했습니다.';
+          toastManager.add({ title: message, colorPalette: 'danger' });
+        });
     }
 
     if (dialog.type === 'edit' && dialog.targetId !== undefined) {
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === dialog.targetId ? { ...p, ...editingData } : p,
-        ),
-      );
-      setEditingId(null);
-      toastManager.add({
-        title: '상품 정보가 수정되었습니다.',
-        colorPalette: 'success',
-      });
+      productAPI
+        .update(dialog.targetId, editingData)
+        .then((res) => {
+          setProducts((prev) =>
+            prev.map((p) => (p.id === dialog.targetId ? res.data.data : p)),
+          );
+          setEditingId(null);
+          toastManager.add({
+            title: '상품이 수정되었습니다.',
+            colorPalette: 'success',
+          });
+        })
+        .catch((err) => {
+          const message =
+            err.response?.data?.message ?? '상품 수정에 실패했습니다.';
+          toastManager.add({ title: message, colorPalette: 'danger' });
+        });
     }
 
     if (dialog.type === 'add') {
-      const newId =
-        products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
-      setProducts((prev) => [...prev, { id: newId, ...newProduct }]);
-      setNewProduct(EMPTY_FORM);
-      setShowAddForm(false);
-      toastManager.add({
-        title: '상품이 추가되었습니다.',
-        colorPalette: 'success',
-      });
+      productAPI
+        .create(newProduct)
+        .then((res) => {
+          setProducts((prev) => [...prev, res.data.data]);
+          setNewProduct(EMPTY_FORM);
+          setShowAddForm(false);
+          setDialog(null);
+          toastManager.add({
+            title: '상품이 추가되었습니다.',
+            colorPalette: 'success',
+          });
+        })
+        .catch((err) => {
+          const message =
+            err.response?.data?.message ?? '상품 추가에 실패했습니다.';
+          toastManager.add({ title: message, colorPalette: 'danger' });
+        });
     }
-
-    setDialog(null);
   };
 
   const columns = useMemo<ColumnDef<Product>[]>(
@@ -247,7 +292,8 @@ export default function ProductsManagePage() {
         cell: ({ row }) =>
           editingId === row.original.id ? (
             <input
-              value={editingData.product_name}
+              value={editingDataRef.current.product_name}
+              placeholder='상품명'
               onChange={(e) =>
                 setEditingData((prev) => ({
                   ...prev,
@@ -268,8 +314,8 @@ export default function ProductsManagePage() {
           editingId === row.original.id ? (
             <input
               type='number'
-              min={1}
-              value={editingData.product_price || ''}
+              placeholder='0'
+              value={editingDataRef.current.product_price || ''}
               onChange={(e) =>
                 setEditingData((prev) => ({
                   ...prev,
@@ -292,7 +338,7 @@ export default function ProductsManagePage() {
             <Select.Root
               placeholder='선택'
               items={CATEGORY_ITEMS}
-              value={editingData.product_category}
+              value={editingDataRef.current.product_category}
               onValueChange={(value) =>
                 setEditingData((prev) => ({
                   ...prev,
@@ -330,8 +376,8 @@ export default function ProductsManagePage() {
           editingId === row.original.id ? (
             <input
               type='number'
-              min={0}
-              value={editingData.stock || ''}
+              placeholder='0'
+              value={editingDataRef.current.stock || ''}
               onChange={(e) =>
                 setEditingData((prev) => ({
                   ...prev,
@@ -382,7 +428,7 @@ export default function ProductsManagePage() {
           ),
       },
     ],
-    [editingId, editingData, expandedRows],
+    [editingId, expandedRows],
   );
 
   const table = useReactTable({
@@ -460,7 +506,10 @@ export default function ProductsManagePage() {
 
               {/* 상품 추가 버튼 */}
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={() => {
+                  setEditingId(null);
+                  setShowAddForm(true);
+                }}
                 className='h-8 px-3 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap'
               >
                 <PlusOutlineIcon size='16px' />
@@ -471,116 +520,124 @@ export default function ProductsManagePage() {
         </Card.Header>
         {/* 상품 추가 폼 */}
         {showAddForm && (
-          <div className='w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 flex flex-wrap gap-4 items-end'>
-            <label className='flex flex-col gap-1 text-sm w-40'>
-              <span className='text-gray-600 font-medium'>상품명</span>
-              <input
-                placeholder='상품명'
-                type='text'
-                value={newProduct.product_name}
-                onChange={(e) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    product_name: e.target.value,
-                  }))
-                }
-                className='border border-gray-300 rounded px-2 py-1 w-36 focus:outline-none focus:ring-2 focus:ring-gray-400'
-              />
-            </label>
-            <label className='flex flex-col gap-1 text-sm w-32'>
-              <span className='text-gray-600 font-medium'>가격</span>
-              <input
-                type='number'
-                placeholder='0'
-                min={1}
-                value={newProduct.product_price || ''}
-                onChange={(e) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    product_price: Number(e.target.value),
-                  }))
-                }
-                className='border border-gray-300 rounded px-2 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-              />
-            </label>
-            <label className='flex flex-col gap-1 text-sm w-32'>
-              <span className='text-gray-600 font-medium'>카테고리</span>
-              <Select.Root
-                placeholder='선택'
-                items={CATEGORY_ITEMS}
-                value={newProduct.product_category}
-                onValueChange={(value) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    product_category: value as string,
-                  }))
-                }
-                size='md'
-              >
-                <Select.Trigger />
-                <Select.Popup>
-                  {CATEGORY_ITEMS.map((item) => (
-                    <Select.Item key={item.value} value={item.value}>
-                      {item.label}{' '}
-                    </Select.Item>
-                  ))}
-                </Select.Popup>
-              </Select.Root>
-            </label>
-            <label className='flex flex-col gap-1 text-sm w-24'>
-              <span className='text-gray-600 font-medium'>재고</span>
-              <input
-                type='number'
-                min={0}
-                placeholder='0'
-                value={newProduct.stock || ''}
-                onChange={(e) =>
-                  setNewProduct((prev) => ({
-                    ...prev,
-                    stock: Number(e.target.value),
-                  }))
-                }
-                className='border border-gray-300 rounded px-2 py-1 w-20 focus:outline-none focus:ring-2 focus:ring-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-              />
-            </label>
-            <label className='flex flex-col gap-1 text-sm flex-1 min-w-48'>
+          <div className='w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 flex flex-col gap-3'>
+            <div className='flex flex-wrap gap-4 items-end'>
+              <label className='flex flex-col gap-1 text-sm w-52'>
+                <span className='text-gray-600 font-medium'>상품명</span>
+                <input
+                  placeholder='상품명'
+                  type='text'
+                  value={newProduct.product_name}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      product_name: e.target.value,
+                    }))
+                  }
+                  className='border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400'
+                />
+              </label>
+              <label className='flex flex-col gap-1 text-sm w-40'>
+                <span className='text-gray-600 font-medium'>가격</span>
+                <input
+                  type='number'
+                  placeholder='0'
+                  min={1}
+                  value={newProduct.product_price || ''}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      product_price: Number(e.target.value),
+                    }))
+                  }
+                  className='border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                />
+              </label>
+              <label className='flex flex-col gap-1 text-sm w-40'>
+                <span className='text-gray-600 font-medium'>카테고리</span>
+                <Select.Root
+                  placeholder='선택'
+                  items={CATEGORY_ITEMS}
+                  value={newProduct.product_category}
+                  onValueChange={(value) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      product_category: value as string,
+                    }))
+                  }
+                  size='md'
+                >
+                  <Select.Trigger />
+                  <Select.Popup>
+                    {CATEGORY_ITEMS.map((item) => (
+                      <Select.Item key={item.value} value={item.value}>
+                        {item.label}{' '}
+                      </Select.Item>
+                    ))}
+                  </Select.Popup>
+                </Select.Root>
+              </label>
+              <label className='flex flex-col gap-1 text-sm w-32'>
+                <span className='text-gray-600 font-medium'>재고</span>
+                <input
+                  type='number'
+                  min={0}
+                  placeholder='0'
+                  value={newProduct.stock || ''}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      stock: Number(e.target.value),
+                    }))
+                  }
+                  className='border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                />
+              </label>
+              <div className='ml-auto flex gap-2 items-end'>
+                <button
+                  onClick={handleAddClick}
+                  className='px-4 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors cursor-pointer'
+                >
+                  추가
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewProduct(EMPTY_FORM);
+                  }}
+                  className='px-4 py-1.5 text-sm rounded cursor-pointer flex items-center gap-1 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors'
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+
+            <div className='flex flex-col gap-1 text-sm w-full'>
               <span className='text-gray-600 font-medium'>상품설명</span>
               <textarea
                 placeholder='상품 설명을 입력하세요'
                 rows={2}
-                value={newProduct.product_description}
+                value={newProduct.product_detail}
                 onChange={(e) =>
                   setNewProduct((prev) => ({
                     ...prev,
-                    product_description: e.target.value,
+                    product_detail: e.target.value,
                   }))
                 }
                 className='border border-gray-300 rounded px-2 py-1 resize-none focus:outline-none focus:ring-2 focus:ring-gray-400'
               />
-            </label>
-            <button
-              onClick={handleAddClick}
-              className='px-4 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors cursor-pointer'
-            >
-              추가
-            </button>
-            <button
-              onClick={() => setShowAddForm(false)}
-              className='px-4 py-1.5 text-sm rounded cursor-pointer flex items-center gap-1 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors'
-            >
-              취소
-            </button>
+            </div>
           </div>
         )}
         <Card.Body $css={{ overflow: 'auto', padding: '$000' }}>
           <Table.Root $css={{ width: '100%', tableLayout: 'fixed' }}>
             <Table.ColumnGroup>
-              <Table.Column width='10%' /> {/* ID */}
-              <Table.Column width='26%' /> {/* 상품명 */}
-              <Table.Column width='16%' /> {/* 가격 */}
-              <Table.Column width='16%' /> {/* 카테고리 */}
-              <Table.Column width='12%' /> {/* 재고 */}
-              <Table.Column width='20%' /> {/* 작업 */}
+              <Table.Column width='10%' />
+              <Table.Column width='26%' />
+              <Table.Column width='16%' />
+              <Table.Column width='16%' />
+              <Table.Column width='12%' />
+              <Table.Column width='20%' />
             </Table.ColumnGroup>
             <Table.Header>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -620,9 +677,18 @@ export default function ProductsManagePage() {
             </Table.Header>
 
             <Table.Body>
-              {table.getRowModel().rows.length ? (
+              {loading ? (
+                <Table.Row>
+                  <Table.Cell
+                    colSpan={columns.length}
+                    $css={{ textAlign: 'center', height: '200px' }}
+                  >
+                    불러오는 중...
+                  </Table.Cell>
+                </Table.Row>
+              ) : table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <>
+                  <Fragment key={row.id}>
                     <Table.Row
                       key={row.id}
                       $css={{ cursor: 'pointer' }}
@@ -660,11 +726,11 @@ export default function ProductsManagePage() {
                               </span>
                               {editingId === row.original.id ? (
                                 <textarea
-                                  value={editingData.product_description}
+                                  value={editingDataRef.current.product_detail}
                                   onChange={(e) =>
                                     setEditingData((prev) => ({
                                       ...prev,
-                                      product_description: e.target.value,
+                                      product_detail: e.target.value,
                                     }))
                                   }
                                   rows={2}
@@ -672,7 +738,7 @@ export default function ProductsManagePage() {
                                 />
                               ) : (
                                 <span className='text-sm text-gray-700'>
-                                  {row.original.product_description}
+                                  {row.original.product_detail}
                                 </span>
                               )}
                             </div>
@@ -680,7 +746,7 @@ export default function ProductsManagePage() {
                         </Collapsible.Root>
                       </Table.Cell>
                     </Table.Row>
-                  </>
+                  </Fragment>
                 ))
               ) : (
                 <Table.Row>

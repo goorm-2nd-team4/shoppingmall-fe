@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -27,8 +27,8 @@ import {
   ArrowUpOutlineIcon,
 } from '@vapor-ui/icons';
 import type { User } from '../../types';
-import { MOCK_USERS } from '../../mocks/mockUsers';
 import { toastManager } from '../../lib/toastManager';
+import { adminMemberAPI } from '../../api/index';
 
 // 상수
 const ROLES = ['USER', 'ADMIN'] as const;
@@ -44,12 +44,10 @@ const ROLE_COLOR: Record<
 };
 
 interface UserFormData {
-  user_name: string;
   user_role: 'USER' | 'ADMIN';
 }
 
 const EMPTY_FORM: UserFormData = {
-  user_name: '',
   user_role: 'USER',
 };
 
@@ -75,7 +73,9 @@ function FilterSelect({ triggerLabel, ...props }: FilterSelectProps) {
 }
 
 export default function MembersManagePage() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [roleFilter, setRoleFilter] = useState<string[]>([]);
@@ -84,22 +84,36 @@ export default function MembersManagePage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingData, setEditingData] = useState<UserFormData>(EMPTY_FORM);
 
+  useEffect(() => {
+    adminMemberAPI
+      .getAll()
+      .then((res) => {
+        const mapped: User[] = res.data.data.members.map((m: any) => ({
+          id: m.id,
+          user_email: m.email,
+          user_name: m.name,
+          user_role: m.role,
+        }));
+        setUsers(mapped);
+      })
+      .catch(() => {
+        toastManager.add({
+          title: '사용자 목록을 불러오지 못했습니다.',
+          colorPalette: 'danger',
+        });
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   // 확인 다이얼로그
   const [dialog, setDialog] = useState<{
     type: 'edit' | 'delete';
     targetId?: number;
   } | null>(null);
 
-  // 유효성 검사
-  const validateForm = (form: UserFormData): string | null => {
-    if (!form.user_name.trim()) return '이름을 입력해주세요.';
-    return null;
-  };
-
   const handleEditStart = (user: User) => {
     setEditingId(user.id);
     setEditingData({
-      user_name: user.user_name,
       user_role: user.user_role,
     });
   };
@@ -107,11 +121,6 @@ export default function MembersManagePage() {
   const handleEditCancel = () => setEditingId(null);
 
   const handleEditSaveClick = (id: number) => {
-    const error = validateForm(editingData);
-    if (error) {
-      toastManager.add({ title: error, colorPalette: 'danger' });
-      return;
-    }
     setDialog({ type: 'edit', targetId: id });
   };
 
@@ -123,24 +132,44 @@ export default function MembersManagePage() {
     if (!dialog) return;
 
     if (dialog.type === 'delete' && dialog.targetId !== undefined) {
-      setUsers((prev) => prev.filter((u) => u.id !== dialog.targetId));
-      toastManager.add({
-        title: '사용자가 삭제되었습니다.',
-        colorPalette: 'success',
-      });
+      adminMemberAPI
+        .delete(dialog.targetId)
+        .then(() => {
+          setUsers((prev) => prev.filter((u) => u.id !== dialog.targetId));
+          toastManager.add({
+            title: '사용자가 삭제되었습니다.',
+            colorPalette: 'success',
+          });
+        })
+        .catch((err) => {
+          const message =
+            err.response?.data?.message ?? '계정 삭제에 실패했습니다.';
+          toastManager.add({ title: message, colorPalette: 'danger' });
+        });
     }
 
     if (dialog.type === 'edit' && dialog.targetId !== undefined) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === dialog.targetId ? { ...u, ...editingData } : u,
-        ),
-      );
-      setEditingId(null);
-      toastManager.add({
-        title: '사용자 정보가 수정되었습니다.',
-        colorPalette: 'success',
-      });
+      adminMemberAPI
+        .updateRole(dialog.targetId, editingData.user_role)
+        .then(() => {
+          setUsers((prev) =>
+            prev.map((u) =>
+              u.id === dialog.targetId
+                ? { ...u, user_role: editingData.user_role }
+                : u,
+            ),
+          );
+          setEditingId(null);
+          toastManager.add({
+            title: '사용자 정보가 수정되었습니다.',
+            colorPalette: 'success',
+          });
+        })
+        .catch((err) => {
+          const message =
+            err.response?.data?.message ?? '역할 변경에 실패했습니다.';
+          toastManager.add({ title: message, colorPalette: 'danger' });
+        });
     }
 
     setDialog(null);
@@ -161,21 +190,9 @@ export default function MembersManagePage() {
         accessorKey: 'user_name',
         enableSorting: true,
         filterFn: 'includesString',
-        cell: ({ row }) =>
-          editingId === row.original.id ? (
-            <input
-              value={editingData.user_name}
-              onChange={(e) =>
-                setEditingData((prev) => ({
-                  ...prev,
-                  user_name: e.target.value,
-                }))
-              }
-              className='border border-gray-300 rounded px-2 py-1 w-32 focus:outline-none focus:ring-2 focus:ring-blue-400'
-            />
-          ) : (
-            <span className='font-medium'>{row.original.user_name}</span>
-          ),
+        cell: ({ row }) => (
+          <span className='font-medium'>{row.original.user_name}</span>
+        ),
       },
       {
         header: '이메일',
@@ -346,11 +363,11 @@ export default function MembersManagePage() {
         <Card.Body $css={{ overflow: 'auto', padding: '$000' }}>
           <Table.Root $css={{ width: '100%', tableLayout: 'fixed' }}>
             <Table.ColumnGroup>
-              <Table.Column width='10%' /> {/* ID */}
-              <Table.Column width='20%' /> {/* 이름 */}
-              <Table.Column width='36%' /> {/* 이메일 */}
-              <Table.Column width='14%' /> {/* 역할 */}
-              <Table.Column width='20%' /> {/* 작업 */}
+              <Table.Column width='10%' />
+              <Table.Column width='20%' />
+              <Table.Column width='36%' />
+              <Table.Column width='14%' />
+              <Table.Column width='20%' />
             </Table.ColumnGroup>
             <Table.Header>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -390,7 +407,16 @@ export default function MembersManagePage() {
             </Table.Header>
 
             <Table.Body>
-              {table.getRowModel().rows.length ? (
+              {loading ? (
+                <Table.Row>
+                  <Table.Cell
+                    colSpan={columns.length}
+                    $css={{ textAlign: 'center', height: '200px' }}
+                  >
+                    불러오는 중...
+                  </Table.Cell>
+                </Table.Row>
+              ) : table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <Table.Row key={row.id}>
                     {row.getVisibleCells().map((cell) => (

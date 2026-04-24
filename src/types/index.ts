@@ -30,6 +30,14 @@ export interface SignupRequest {
   user_name: string;
 }
 
+/** 상품 등록/수정 데이터 */
+export interface ProductFormData {
+  product_name: string;
+  product_price: number;
+  product_category: string;
+  product_stock: number;
+}
+
 /** 장바구니 아이템 */
 export interface CartItem {
   id: number;

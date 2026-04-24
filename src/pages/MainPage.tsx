@@ -15,12 +15,14 @@ const MainPage = () => {
       .getAll()
       .then((res) => setProducts(res.data.data))
       .catch(() => {
+        // 백엔드 연결 전 테스트용 가짜 데이터
         setProducts([
           {
             id: 1,
             product_name: '사과',
             product_price: 1000,
             product_category: 'food',
+            product_detail: '아삭한 사과',
             stock: 50,
           },
           {
@@ -28,6 +30,7 @@ const MainPage = () => {
             product_name: '키보드',
             product_price: 39000,
             product_category: 'tech',
+            product_detail: '기계식 키보드',
             stock: 10,
           },
         ]);
@@ -72,6 +75,7 @@ const MainPage = () => {
                 {p.product_price.toLocaleString()}원
               </Text>
               <div className='mt-4 pt-4 border-t border-gray-100 flex justify-between items-center'>
+                {/* product_stock에서 stock으로 변경됨 */}
                 <Text className='text-sm text-gray-500'>재고: {p.stock}개</Text>
                 <Text className='text-blue-500 text-sm font-medium'>
                   상세보기 →

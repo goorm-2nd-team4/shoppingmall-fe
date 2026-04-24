@@ -3,7 +3,7 @@ import { SignupRequest, LoginRequest } from '../types';
 
 const api = axios.create({
   // 백엔드 서버 들어갈 곳
-  baseURL: 'http://localhost:8080/api', 
+  baseURL: 'http://localhost:8080/api',
 });
 
 /** 인증 관련 */
@@ -22,7 +22,7 @@ export const productAPI = {
 /** 장바구니 관련 */
 export const cartAPI = {
   getList: () => api.get('/carts'),
-  add: (productId: number, count: number) => 
+  add: (productId: number, count: number) =>
     api.post('/carts', { product_id: productId, product_count: count }),
   delete: (id: number) => api.delete(`/carts/${id}`),
 };

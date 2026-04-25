@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import MainPage from './pages/MainPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
@@ -9,6 +9,7 @@ import SignupPage from './pages/auth/SignupPage';
 import { AdminRoute } from './components/route/AdminRoute';
 import MembersManagePage from './pages/admin/MembersManagePage';
 import ProductsManagePage from './pages/admin/ProductsManagePage';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   return (
@@ -27,21 +28,16 @@ function App() {
 
           {/* 관리자 페이지 */}
           <Route
-            path='/admin/members'
+            path='/admin'
             element={
               <AdminRoute>
-                <MembersManagePage />
+                <Outlet />
               </AdminRoute>
             }
-          />
-          <Route
-            path='/admin/products'
-            element={
-              <AdminRoute>
-                <ProductsManagePage />
-              </AdminRoute>
-            }
-          />
+          >
+            <Route path='members' element={<MembersManagePage />} />
+            <Route path='products' element={<ProductsManagePage />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>

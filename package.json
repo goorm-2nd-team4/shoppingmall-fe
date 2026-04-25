@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/react-table": "^8.21.3",
     "@vapor-ui/core": "^1.2.1",
     "@vapor-ui/icons": "^1.2.0",
     "axios": "^1.15.2",

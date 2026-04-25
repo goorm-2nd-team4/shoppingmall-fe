@@ -12,8 +12,8 @@ export interface Product {
   product_name: string;
   product_price: number;
   product_category: string;
-  product_detail: string; // 추가됨
-  stock: number; // product_stock -> stock
+  product_detail: string;
+  stock: number;
 }
 
 /** 로그인 요청 */
@@ -35,7 +35,8 @@ export interface ProductFormData {
   product_name: string;
   product_price: number;
   product_category: string;
-  product_stock: number;
+  stock: number;
+  product_detail: string;
 }
 
 /** 장바구니 아이템 */

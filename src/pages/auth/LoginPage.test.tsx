@@ -12,7 +12,16 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({ login: mockLogin }),
+  useAuth: () => ({
+    login: mockLogin,
+    user: null,
+    isAdmin: false,
+    logout: vi.fn(),
+  }),
+}));
+
+vi.mock('../../components/Header', () => ({
+  default: () => null,
 }));
 
 const renderLoginPage = () =>

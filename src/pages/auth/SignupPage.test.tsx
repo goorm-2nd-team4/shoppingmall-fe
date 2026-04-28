@@ -1,14 +1,31 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, renderMatches, useNavigate } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import SignupPage from './SignupPage';
 
 const mockNavigate = vi.fn();
+const mockSignup = vi.hoisted(() => vi.fn());
 
 vi.mock('react-router-dom', async () => {
   const act = await vi.importActual('react-router-dom');
   return { ...act, useNavigate: () => mockNavigate };
 });
+
+vi.mock('../../api/index', () => ({
+  authAPI: { signup: mockSignup },
+}));
+
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: null,
+    isAdmin: false,
+    logout: vi.fn(),
+  }),
+}));
+
+vi.mock('../../components/Header', () => ({
+  default: () => null,
+}));
 
 const renderSignupPage = () =>
   render(
@@ -21,6 +38,7 @@ describe('SignupPage', () => {
   // 매 테스트 이전 초기화
   beforeEach(() => {
     mockNavigate.mockClear();
+    mockSignup.mockClear();
   });
 
   it('폼 렌더링', () => {
@@ -38,6 +56,7 @@ describe('SignupPage', () => {
   });
 
   it('회원가입 성공 시 /login 으로 이동', async () => {
+    mockSignup.mockResolvedValueOnce({});
     renderSignupPage();
 
     const user = userEvent.setup();

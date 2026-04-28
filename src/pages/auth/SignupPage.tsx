@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -23,13 +24,19 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      navigate('/login');
-    } catch {
-      setError('회원가입에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    await axios.post('/api/auth/register', {
+      user_name: userName,
+      user_email: userEmail,
+      user_password: userPassword,
+      user_password_confirm: userPasswordConfirm,
+    });
+    navigate('/login');
+  } catch {
+    setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const inputClass =
     'w-full rounded-xl border border-stone-400 px-4 py-2.5 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-600 focus:ring-2 focus:ring-stone-100';

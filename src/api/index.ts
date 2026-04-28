@@ -14,6 +14,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+
 /** 인증 관련 */
 export const authAPI = {
   signup: (data: SignupRequest) => api.post('/auth/register', data),
@@ -31,13 +32,22 @@ export const productAPI = {
   delete: (id: string | number) => api.delete(`/products/${id}`),
 };
 
+
+
 /** 장바구니 관련 */
 export const cartAPI = {
-  getList: () => api.get('/carts'),
+  getList: () => api.get('/cart'),
+
   add: (productId: number, count: number) =>
-    api.post('/carts', { product_id: productId, product_count: count }),
-  delete: (id: number) => api.delete(`/carts/${id}`),
+    api.post('/cart/items', { 
+      productId, 
+      productCount: count 
+    }),
+
+  delete: (id: number) => api.delete(`/cart/items/${id}`),
 };
+
+
 
 export const adminMemberAPI = {
   // GET /api/admin/members → { totalCount, adminCount, members: MemberResponse[] }
@@ -49,6 +59,19 @@ export const adminMemberAPI = {
 
   // DELETE /api/admin/members/{id}
   delete: (id: number) => api.delete(`/admin/members/${id}`),
+};
+
+/** 주문 관련 */
+export const orderAPI = {
+  // 주문 생성 
+  create: (data: { items: { productId: number; productCount: number }[]; fromCart: boolean }) => 
+    api.post('/orders', data),
+  
+  // 내 주문 내역 조회
+  getMyOrders: () => api.get('/orders/my'),
+  
+  // 주문 상세 조회
+  getDetail: (id: number) => api.get(`/orders/${id}`),
 };
 
 export const userAPI = {

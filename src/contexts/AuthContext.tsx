@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type { User } from '../types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
@@ -31,19 +32,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * @now 목업 데이터
    * @todo 실제 api 호출
    */
+
+  //목업-> 실제 api 호출로 변경
   const login = async (user_email: string, user_password: string) => {
-    const mockUser: User = {
-      id: 1,
-      user_email,
-      user_name: 'goorm',
-      user_role: user_email === 'admin@goorm.io' ? 'ADMIN' : 'USER',
-    };
+  const res = await axios.post('/api/auth/login', { user_email, user_password }); 
 
-    localStorage.setItem('token', 'mockToken');
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    setUser(mockUser);
-  };
+  const { id, user_email: email, user_name, user_role, token } = res.data.data; 
 
+  const user: User = { id, user_email: email, user_name, user_role }; 
+
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(user));
+  setUser(user);
+};
   /** 로그아웃 */
   const logout = () => {
     localStorage.removeItem('token');

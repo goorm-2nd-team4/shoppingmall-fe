@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, renderMatches, useNavigate } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import SignupPage from './SignupPage';
 
 const mockNavigate = vi.fn();
@@ -18,7 +18,6 @@ const renderSignupPage = () =>
   );
 
 describe('SignupPage', () => {
-  // 매 테스트 이전 초기화
   beforeEach(() => {
     mockNavigate.mockClear();
   });

@@ -24,9 +24,8 @@ const PaymentPage = () => {
   // 주문 요약 텍스트 (예: '상품 A 외 2건')
   const firstItemName = cart.items[0]?.productName || '상품';
   const extraCount = cart.items.length - 1;
-  const orderSummary = extraCount > 0 
-    ? `${firstItemName} 외 ${extraCount}건` 
-    : firstItemName;
+  const orderSummary =
+    extraCount > 0 ? `${firstItemName} 외 ${extraCount}건` : firstItemName;
 
   // 2. 결제 처리 함수
   const handlePayment = async () => {
@@ -37,16 +36,16 @@ const PaymentPage = () => {
           productId: Number(item.productId),
           productName: String(item.productName),
           productCount: Number(item.productCount),
-          productPrice: Number(item.productPrice)
+          productPrice: Number(item.productPrice),
         })),
-        fromCart: fromCart // 장바구니에서 왔다면 true, 바로구매라면 false
+        fromCart: fromCart, // 장바구니에서 왔다면 true, 바로구매라면 false
       };
 
       await orderAPI.create(payload);
       navigate('/success');
     } catch (error: any) {
-      console.error("결제 처리 중 오류:", error);
-      alert(error.response?.data?.message || "결제 중 오류가 발생했습니다.");
+      console.error('결제 처리 중 오류:', error);
+      alert(error.response?.data?.message || '결제 중 오류가 발생했습니다.');
     }
   };
 
@@ -57,13 +56,17 @@ const PaymentPage = () => {
         <Text className='text-2xl font-bold mb-6 block'>결제하기</Text>
         <div className='bg-white border border-gray-200 rounded-xl p-8 shadow-md'>
           <div className='mb-6'>
-            <Text className='font-bold text-gray-700 mb-2 block'>주문 정보</Text>
+            <Text className='font-bold text-gray-700 mb-2 block'>
+              주문 정보
+            </Text>
             <Text className='text-lg'>{orderSummary}</Text>
           </div>
-          
+
           <div className='border-t py-6'>
             <Text className='font-bold text-gray-700 mb-2 block'>배송지</Text>
-            <Text className='text-gray-500'>등록된 기본 배송지로 발송됩니다.</Text>
+            <Text className='text-gray-500'>
+              등록된 기본 배송지로 발송됩니다.
+            </Text>
           </div>
 
           <div className='border-t pt-6 mb-8'>

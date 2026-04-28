@@ -23,13 +23,15 @@ export const cartAPI = {
 
 /** 주문 관련 */
 export const orderAPI = {
-  // 주문 생성 
-  create: (data: { items: { productId: number; productCount: number }[]; fromCart: boolean }) => 
-    api.post('/orders', data),
-  
+  // 주문 생성
+  create: (data: {
+    items: { productId: number; productCount: number }[];
+    fromCart: boolean;
+  }) => api.post('/orders', data),
+
   // 내 주문 내역 조회
   getMyOrders: () => api.get('/orders/my'),
-  
+
   // 주문 상세 조회
   getDetail: (id: number) => api.get(`/orders/${id}`),
 };

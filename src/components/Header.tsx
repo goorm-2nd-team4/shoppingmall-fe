@@ -1,5 +1,5 @@
 import { Button, Text } from '@vapor-ui/core';
-import { ShoppingCartIcon, UserIcon } from '@vapor-ui/icons'; 
+import { ShoppingCartIcon, UserIcon } from '@vapor-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,7 +12,7 @@ const Header = () => {
       // 로그인 상태라면 로그아웃 실행
       logout();
       alert('로그아웃 되었습니다.');
-      navigate('/'); 
+      navigate('/');
     } else {
       // 비로그인 상태라면 로그인 페이지로 이동
       navigate('/login');

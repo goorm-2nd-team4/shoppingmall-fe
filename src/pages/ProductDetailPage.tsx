@@ -68,9 +68,19 @@ const ProductDetailPage = () => {
 
           {/* 수량 선택 */}
           <div className='flex items-center gap-3'>
-            <Button variant='outline' onClick={() => setCount((c) => Math.max(1, c - 1))}>-</Button>
+            <Button
+              variant='outline'
+              onClick={() => setCount((c) => Math.max(1, c - 1))}
+            >
+              -
+            </Button>
             <Text className='text-lg font-bold'>{count}</Text>
-            <Button variant='outline' onClick={() => setCount((c) => Math.min(product.stock, c + 1))}>+</Button>
+            <Button
+              variant='outline'
+              onClick={() => setCount((c) => Math.min(product.stock, c + 1))}
+            >
+              +
+            </Button>
           </div>
 
           {/* 이 부분이 수정된 버튼 영역입니다! */}
@@ -88,19 +98,21 @@ const ProductDetailPage = () => {
               onClick={() => {
                 if (!product) return;
                 const orderData = {
-                  items: [{
-                    productId: product.id,
-                    productName: product.product_name,
-                    productPrice: product.product_price,
-                    productCount: count
-                  }],
-                  totalPrice: product.product_price * count
+                  items: [
+                    {
+                      productId: product.id,
+                      productName: product.product_name,
+                      productPrice: product.product_price,
+                      productCount: count,
+                    },
+                  ],
+                  totalPrice: product.product_price * count,
                 };
-                navigate('/payment', { 
-                  state: { 
-                    cart: orderData, 
-                    fromCart: false 
-                  } 
+                navigate('/payment', {
+                  state: {
+                    cart: orderData,
+                    fromCart: false,
+                  },
                 });
               }}
             >

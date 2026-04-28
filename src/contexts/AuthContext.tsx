@@ -35,16 +35,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   //목업-> 실제 api 호출로 변경
   const login = async (user_email: string, user_password: string) => {
-  const res = await axios.post('/api/auth/login', { user_email, user_password }); 
+    const res = await axios.post('/api/auth/login', {
+      user_email,
+      user_password,
+    });
 
-  const { id, user_email: email, user_name, user_role, token } = res.data.data; 
+    const {
+      id,
+      user_email: email,
+      user_name,
+      user_role,
+      token,
+    } = res.data.data;
 
-  const user: User = { id, user_email: email, user_name, user_role }; 
+    const user: User = { id, user_email: email, user_name, user_role };
 
-  localStorage.setItem('token', token);
-  localStorage.setItem('user', JSON.stringify(user));
-  setUser(user);
-};
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setUser(user);
+  };
   /** 로그아웃 */
   const logout = () => {
     localStorage.removeItem('token');

@@ -4,7 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {  //server 추가했음
+  server: {
+    //server 추가했음
     port: 5173,
     proxy: {
       '/api': {
@@ -12,7 +13,8 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  },  test: {
+  },
+  test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

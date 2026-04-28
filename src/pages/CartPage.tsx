@@ -8,7 +8,7 @@ import { cartAPI } from '../api';
 interface CartItem {
   cartItemId: number;
   productId: number;
-  productName: string; 
+  productName: string;
   productCount: number;
   productPrice: number;
   subtotal: number;
@@ -35,7 +35,14 @@ const CartPage = () => {
         setCart({
           cartId: 1,
           items: [
-            { cartItemId: 1, productId: 1, productName: '샘플 사과', productCount: 2, productPrice: 1000, subtotal: 2000 },
+            {
+              cartItemId: 1,
+              productId: 1,
+              productName: '샘플 사과',
+              productCount: 2,
+              productPrice: 1000,
+              subtotal: 2000,
+            },
           ],
           totalPrice: 2000,
           totalCount: 2,
@@ -49,16 +56,16 @@ const CartPage = () => {
   // 주문하기 버튼 클릭 핸들러
   const handleOrderClick = () => {
     if (!cart || cart.items.length === 0) {
-      alert("장바구니가 비어 있습니다.");
+      alert('장바구니가 비어 있습니다.');
       return;
     }
 
     // PaymentPage로 데이터 전달
-    navigate('/payment', { 
-      state: { 
-        cart: cart, 
-        fromCart: true // ★ 이 값이 true여야 결제 완료 후 장바구니가 비워집니다!
-      } 
+    navigate('/payment', {
+      state: {
+        cart: cart,
+        fromCart: true, // ★ 이 값이 true여야 결제 완료 후 장바구니가 비워집니다!
+      },
     });
   };
 
@@ -84,9 +91,7 @@ const CartPage = () => {
               <Button
                 variant='ghost'
                 className='text-red-500 p-2 hover:bg-red-50'
-                onClick={() =>
-                  cartAPI.delete(item.cartItemId).then(fetchCart)
-                }
+                onClick={() => cartAPI.delete(item.cartItemId).then(fetchCart)}
               >
                 <TrashIcon size={20} />
               </Button>

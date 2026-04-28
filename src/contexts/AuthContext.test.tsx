@@ -1,10 +1,25 @@
 import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from './AuthContext';
 
+const mockLogin = vi.hoisted(() => vi.fn());
+const mockLogout = vi.hoisted(() => vi.fn());
+
+vi.mock('../api/index', () => ({
+  authAPI: {
+    login: mockLogin,
+    logout: mockLogout,
+  },
+  userAPI: {
+    getMe: vi.fn(),
+  },
+}));
+
 describe('AuthContext', () => {
   // 매 테스트 이전에 로컬 스토리지 초기화
   beforeEach(() => {
     localStorage.clear();
+    mockLogin.mockClear();
+    mockLogout.mockClear();
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -19,6 +34,17 @@ describe('AuthContext', () => {
   });
 
   it('login -> user 상태 및 localStorage 업데이트', async () => {
+    mockLogin.mockResolvedValueOnce({
+      data: {
+        data: {
+          id: 1,
+          user_email: 'user@goorm.io',
+          user_name: '테스트',
+          user_role: 'USER',
+          token: 'mockToken',
+        },
+      },
+    });
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
       await result.current.login('user@goorm.io', 'password');
@@ -29,6 +55,17 @@ describe('AuthContext', () => {
   });
 
   it('admin 로그인 시 isAdmin = true', async () => {
+    mockLogin.mockResolvedValueOnce({
+      data: {
+        data: {
+          id: 1,
+          user_email: 'admin@goorm.io',
+          user_name: '관리자',
+          user_role: 'ADMIN',
+          token: 'mockToken',
+        },
+      },
+    });
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
       await result.current.login('admin@goorm.io', 'password');
@@ -38,6 +75,17 @@ describe('AuthContext', () => {
   });
 
   it('user 로그인 시 isAdmin = false', async () => {
+    mockLogin.mockResolvedValueOnce({
+      data: {
+        data: {
+          id: 1,
+          user_email: 'user@goorm.io',
+          user_name: '테스트',
+          user_role: 'USER',
+          token: 'mockToken',
+        },
+      },
+    });
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
       await result.current.login('user@goorm.io', 'password');
@@ -47,12 +95,24 @@ describe('AuthContext', () => {
   });
 
   it('logout 후 user null, localStorage 제거', async () => {
+    mockLogin.mockResolvedValueOnce({
+      data: {
+        data: {
+          id: 1,
+          user_email: 'admin@goorm.io',
+          user_name: '관리자',
+          user_role: 'ADMIN',
+          token: 'mockToken',
+        },
+      },
+    });
+    mockLogout.mockResolvedValueOnce({});
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
       await result.current.login('admin@goorm.io', 'password');
     });
-    act(() => {
-      result.current.logout();
+    await act(async () => {
+      await result.current.logout();
     });
     expect(result.current.user).toBeNull();
     expect(localStorage.getItem('token')).toBeNull();

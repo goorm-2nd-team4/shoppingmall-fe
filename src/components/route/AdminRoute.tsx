@@ -1,6 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useEffect } from 'react';
 import React from 'react';
+import { toastManager } from '../../lib/toastManager';
 
 /**
  * 어드민 권한을 필요로 하는 라우트
@@ -9,6 +11,15 @@ import React from 'react';
  */
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isAdmin } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && user && !isAdmin) {
+      toastManager.add({
+        title: '접근 권한이 없습니다.',
+        colorPalette: 'danger',
+      });
+    }
+  }, [isLoading, user, isAdmin]);
 
   if (isLoading)
     return (

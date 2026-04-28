@@ -18,6 +18,10 @@ vi.mock('../../lib/toastManager', () => ({
   toastManager: { add: vi.fn() },
 }));
 
+vi.mock('../../components/Header', () => ({
+  default: () => null,
+}));
+
 const mockProducts = [
   {
     id: 1,

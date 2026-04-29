@@ -17,6 +17,10 @@ vi.mock('../../lib/toastManager', () => ({
   toastManager: { add: vi.fn() },
 }));
 
+vi.mock('../../components/Header', () => ({
+  default: () => null,
+}));
+
 const mockMembers = [
   { id: 1, email: 'admin@test.com', name: '관리자', role: 'ADMIN' },
   { id: 2, email: 'user@test.com', name: '홍길동', role: 'USER' },

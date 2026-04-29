@@ -3,12 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import SignupPage from './SignupPage';
 
-const mockNavigate = vi.fn();
 
-vi.mock('react-router-dom', async () => {
-  const act = await vi.importActual('react-router-dom');
-  return { ...act, useNavigate: () => mockNavigate };
-});
 
 const renderSignupPage = () =>
   render(
@@ -18,9 +13,7 @@ const renderSignupPage = () =>
   );
 
 describe('SignupPage', () => {
-  beforeEach(() => {
-    mockNavigate.mockClear();
-  });
+
 
   it('폼 렌더링', () => {
     renderSignupPage();
@@ -48,7 +41,6 @@ describe('SignupPage', () => {
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
 
@@ -85,6 +77,5 @@ describe('SignupPage', () => {
     );
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
-    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

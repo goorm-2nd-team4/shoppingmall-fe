@@ -29,6 +29,7 @@ import {
 import type { User } from '../../types';
 import { toastManager } from '../../lib/toastManager';
 import { adminMemberAPI } from '../../api/index';
+import Header from '../../components/Header';
 
 // 상수
 const ROLES = ['USER', 'ADMIN'] as const;
@@ -302,242 +303,249 @@ export default function MembersManagePage() {
   });
 
   return (
-    <div className='p-6 max-w-5xl mx-auto'>
-      <h1 className='text-2xl font-bold mb-6'>사용자 관리</h1>
+    <div className='min-h-screen bg-gray-50'>
+      <Header />
+      <div className='p-6 max-w-5xl mx-auto'>
+        <h1 className='text-2xl font-bold mb-6'>사용자 관리</h1>
 
-      <Card.Root>
-        <Card.Header>
-          <HStack
-            $css={{ justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <span className='text-lg font-semibold text-gray-700 shrink-0'>
-              사용자 목록
-            </span>
+        <Card.Root>
+          <Card.Header>
+            <HStack
+              $css={{ justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span className='text-lg font-semibold text-gray-700 shrink-0'>
+                사용자 목록
+              </span>
 
-            <HStack $css={{ alignItems: 'center', gap: '$100' }}>
-              {/* 이름 검색 */}
-              <HStack
-                $css={{
-                  alignItems: 'center',
-                  gap: '10px',
-                  paddingLeft: '$150',
-                  border: '1px solid',
-                  borderColor: '$normal',
-                  borderRadius: '$300',
-                  width: '220px',
-                }}
-              >
-                <SearchOutlineIcon />
-                <TextInput
-                  placeholder='이름 검색'
+              <HStack $css={{ alignItems: 'center', gap: '$100' }}>
+                {/* 이름 검색 */}
+                <HStack
                   $css={{
-                    border: 'none',
-                    paddingInline: '$000',
-                    flex: 1,
-                    outline: 'none',
-                    boxShadow: 'none',
+                    alignItems: 'center',
+                    gap: '10px',
+                    paddingLeft: '$150',
+                    border: '1px solid',
+                    borderColor: '$normal',
+                    borderRadius: '$300',
+                    width: '220px',
                   }}
-                  onValueChange={(value) =>
-                    table.getColumn('user_name')?.setFilterValue(value)
-                  }
-                />
-              </HStack>
-
-              {/* 역할 필터 */}
-              <div className='w-40'>
-                <FilterSelect
-                  triggerLabel='역할'
-                  items={ROLE_ITEMS}
-                  value={roleFilter}
-                  size='md'
-                  onValueChange={(value) => {
-                    setRoleFilter(value as string[]);
-                    table.getColumn('user_role')?.setFilterValue(value);
-                  }}
-                />
-              </div>
-            </HStack>
-          </HStack>
-        </Card.Header>
-
-        <Card.Body $css={{ overflow: 'auto', padding: '$000' }}>
-          <Table.Root $css={{ width: '100%', tableLayout: 'fixed' }}>
-            <Table.ColumnGroup>
-              <Table.Column width='10%' />
-              <Table.Column width='20%' />
-              <Table.Column width='36%' />
-              <Table.Column width='14%' />
-              <Table.Column width='20%' />
-            </Table.ColumnGroup>
-            <Table.Header>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <Table.Row
-                  key={headerGroup.id}
-                  $css={{ backgroundColor: '$basic-gray-050' }}
                 >
-                  {headerGroup.headers.map((header) => (
-                    <Table.Heading
-                      key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
-                      $css={{
-                        cursor: header.column.getCanSort()
-                          ? 'pointer'
-                          : 'default',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <HStack $css={{ gap: '$050', alignItems: 'center' }}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                        {header.column.getCanSort() &&
-                          (header.column.getIsSorted() === 'asc' ? (
-                            <ArrowDownOutlineIcon />
-                          ) : header.column.getIsSorted() === 'desc' ? (
-                            <ArrowUpOutlineIcon />
-                          ) : (
-                            <ArrowDownOutlineIcon color='none' />
-                          ))}
-                      </HStack>
-                    </Table.Heading>
-                  ))}
-                </Table.Row>
-              ))}
-            </Table.Header>
+                  <SearchOutlineIcon />
+                  <TextInput
+                    placeholder='이름 검색'
+                    $css={{
+                      border: 'none',
+                      paddingInline: '$000',
+                      flex: 1,
+                      outline: 'none',
+                      boxShadow: 'none',
+                    }}
+                    onValueChange={(value) =>
+                      table.getColumn('user_name')?.setFilterValue(value)
+                    }
+                  />
+                </HStack>
 
-            <Table.Body>
-              {loading ? (
-                <Table.Row>
-                  <Table.Cell
-                    colSpan={columns.length}
-                    $css={{ textAlign: 'center', height: '200px' }}
+                {/* 역할 필터 */}
+                <div className='w-40'>
+                  <FilterSelect
+                    triggerLabel='역할'
+                    items={ROLE_ITEMS}
+                    value={roleFilter}
+                    size='md'
+                    onValueChange={(value) => {
+                      setRoleFilter(value as string[]);
+                      table.getColumn('user_role')?.setFilterValue(value);
+                    }}
+                  />
+                </div>
+              </HStack>
+            </HStack>
+          </Card.Header>
+
+          <Card.Body $css={{ overflow: 'auto', padding: '$000' }}>
+            <Table.Root $css={{ width: '100%', tableLayout: 'fixed' }}>
+              <Table.ColumnGroup>
+                <Table.Column width='10%' />
+                <Table.Column width='20%' />
+                <Table.Column width='36%' />
+                <Table.Column width='14%' />
+                <Table.Column width='20%' />
+              </Table.ColumnGroup>
+              <Table.Header>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <Table.Row
+                    key={headerGroup.id}
+                    $css={{ backgroundColor: '$basic-gray-050' }}
                   >
-                    불러오는 중...
-                  </Table.Cell>
-                </Table.Row>
-              ) : table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <Table.Row key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <Table.Cell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </Table.Cell>
+                    {headerGroup.headers.map((header) => (
+                      <Table.Heading
+                        key={header.id}
+                        onClick={header.column.getToggleSortingHandler()}
+                        $css={{
+                          cursor: header.column.getCanSort()
+                            ? 'pointer'
+                            : 'default',
+                          userSelect: 'none',
+                        }}
+                      >
+                        <HStack $css={{ gap: '$050', alignItems: 'center' }}>
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {header.column.getCanSort() &&
+                            (header.column.getIsSorted() === 'asc' ? (
+                              <ArrowDownOutlineIcon />
+                            ) : header.column.getIsSorted() === 'desc' ? (
+                              <ArrowUpOutlineIcon />
+                            ) : (
+                              <ArrowDownOutlineIcon color='none' />
+                            ))}
+                        </HStack>
+                      </Table.Heading>
                     ))}
                   </Table.Row>
-                ))
-              ) : (
-                <Table.Row>
-                  <Table.Cell
-                    colSpan={columns.length}
-                    $css={{ textAlign: 'center', height: '200px' }}
-                  >
-                    검색 결과가 없습니다.
-                  </Table.Cell>
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table.Root>
-
-          {/* 페이지네이션 */}
-          <Card.Footer
-            $css={{
-              position: 'relative',
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            <span className='absolute left-6 text-sm text-gray-500'>
-              총 {table.getFilteredRowModel().rows.length}명{' '}
-              {table.getFilteredRowModel().rows.length !== users.length && (
-                <span className='text-gray-400'>(전체 {users.length}명)</span>
-              )}
-            </span>
-
-            <Pagination.Root
-              totalPages={table.getPageCount()}
-              page={table.getState().pagination.pageIndex + 1}
-              onPageChange={(page) => table.setPageIndex(page - 1)}
-            >
-              <Pagination.Previous />
-              <Pagination.Items />
-              <Pagination.Next />
-            </Pagination.Root>
-
-            <Select.Root
-              value={table.getState().pagination.pageSize}
-              onValueChange={(value) => table.setPageSize(Number(value))}
-            >
-              <Select.TriggerPrimitive
-                $css={{ position: 'absolute' }}
-                style={{ right: 24, top: '50%', transform: 'translateY(-50%)' }}
-              >
-                <Select.ValuePrimitive>
-                  {(value) => `${value}개씩 보기`}
-                </Select.ValuePrimitive>
-                <Select.TriggerIconPrimitive />
-              </Select.TriggerPrimitive>
-              <Select.Popup>
-                {[5, 10, 20, 30].map((size) => (
-                  <Select.Item key={size} value={size}>
-                    {size}
-                  </Select.Item>
                 ))}
-              </Select.Popup>
-            </Select.Root>
-          </Card.Footer>
-        </Card.Body>
-      </Card.Root>
+              </Table.Header>
 
-      {/* 확인 Dialog */}
-      <Dialog.Root
-        open={dialog !== null}
-        onOpenChange={(open) => {
-          if (!open) setDialog(null);
-        }}
-      >
-        <Dialog.Popup>
-          <Dialog.Header>
-            <Dialog.Title>
-              {dialog?.type === 'delete' && '사용자 삭제'}
-              {dialog?.type === 'edit' && '사용자 수정'}
-            </Dialog.Title>
-          </Dialog.Header>
-          <Dialog.Body>
-            <Dialog.Description>
-              {dialog?.type === 'delete' &&
-                '정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'}
-              {dialog?.type === 'edit' && '사용자 정보를 수정하시겠습니까?'}
-            </Dialog.Description>
-          </Dialog.Body>
-          <Dialog.Footer style={{ marginLeft: 'auto' }}>
-            <Dialog.Close
-              render={
-                <button
-                  onClick={handleConfirm}
-                  className={`px-4 py-1.5 text-sm rounded text-white cursor-pointer mx-1 ${
-                    dialog?.type === 'delete'
-                      ? 'bg-red-500 hover:bg-red-600'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
+              <Table.Body>
+                {loading ? (
+                  <Table.Row>
+                    <Table.Cell
+                      colSpan={columns.length}
+                      $css={{ textAlign: 'center', height: '200px' }}
+                    >
+                      불러오는 중...
+                    </Table.Cell>
+                  </Table.Row>
+                ) : table.getRowModel().rows.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <Table.Row key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <Table.Cell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Table.Cell>
+                      ))}
+                    </Table.Row>
+                  ))
+                ) : (
+                  <Table.Row>
+                    <Table.Cell
+                      colSpan={columns.length}
+                      $css={{ textAlign: 'center', height: '200px' }}
+                    >
+                      검색 결과가 없습니다.
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table.Root>
+
+            {/* 페이지네이션 */}
+            <Card.Footer
+              $css={{
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <span className='absolute left-6 text-sm text-gray-500'>
+                총 {table.getFilteredRowModel().rows.length}명{' '}
+                {table.getFilteredRowModel().rows.length !== users.length && (
+                  <span className='text-gray-400'>(전체 {users.length}명)</span>
+                )}
+              </span>
+
+              <Pagination.Root
+                totalPages={table.getPageCount()}
+                page={table.getState().pagination.pageIndex + 1}
+                onPageChange={(page) => table.setPageIndex(page - 1)}
+              >
+                <Pagination.Previous />
+                <Pagination.Items />
+                <Pagination.Next />
+              </Pagination.Root>
+
+              <Select.Root
+                value={table.getState().pagination.pageSize}
+                onValueChange={(value) => table.setPageSize(Number(value))}
+              >
+                <Select.TriggerPrimitive
+                  $css={{ position: 'absolute' }}
+                  style={{
+                    right: 24,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                  }}
                 >
-                  확인
-                </button>
-              }
-            />
-            <Dialog.Close
-              render={
-                <button className='px-4 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-100 cursor-pointer'>
-                  취소
-                </button>
-              }
-            />
-          </Dialog.Footer>
-        </Dialog.Popup>
-      </Dialog.Root>
+                  <Select.ValuePrimitive>
+                    {(value) => `${value}개씩 보기`}
+                  </Select.ValuePrimitive>
+                  <Select.TriggerIconPrimitive />
+                </Select.TriggerPrimitive>
+                <Select.Popup>
+                  {[5, 10, 20, 30].map((size) => (
+                    <Select.Item key={size} value={size}>
+                      {size}
+                    </Select.Item>
+                  ))}
+                </Select.Popup>
+              </Select.Root>
+            </Card.Footer>
+          </Card.Body>
+        </Card.Root>
+
+        {/* 확인 Dialog */}
+        <Dialog.Root
+          open={dialog !== null}
+          onOpenChange={(open) => {
+            if (!open) setDialog(null);
+          }}
+        >
+          <Dialog.Popup>
+            <Dialog.Header>
+              <Dialog.Title>
+                {dialog?.type === 'delete' && '사용자 삭제'}
+                {dialog?.type === 'edit' && '사용자 수정'}
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <Dialog.Description>
+                {dialog?.type === 'delete' &&
+                  '정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'}
+                {dialog?.type === 'edit' && '사용자 정보를 수정하시겠습니까?'}
+              </Dialog.Description>
+            </Dialog.Body>
+            <Dialog.Footer style={{ marginLeft: 'auto' }}>
+              <Dialog.Close
+                render={
+                  <button
+                    onClick={handleConfirm}
+                    className={`px-4 py-1.5 text-sm rounded text-white cursor-pointer mx-1 ${
+                      dialog?.type === 'delete'
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    확인
+                  </button>
+                }
+              />
+              <Dialog.Close
+                render={
+                  <button className='px-4 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-100 cursor-pointer'>
+                    취소
+                  </button>
+                }
+              />
+            </Dialog.Footer>
+          </Dialog.Popup>
+        </Dialog.Root>
+      </div>
     </div>
   );
 }

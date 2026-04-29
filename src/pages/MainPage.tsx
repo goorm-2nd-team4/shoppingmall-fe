@@ -8,33 +8,22 @@ import { Product } from '../types';
 const MainPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     productAPI
       .getAll()
-      .then((res) => setProducts(res.data.data))
+      .then((res) => {
+        setProducts(res.data.data);
+        setError('');
+      })
       .catch(() => {
-        // 백엔드 연결 전 테스트용 가짜 데이터
-        setProducts([
-          {
-            id: 1,
-            product_name: '사과',
-            product_price: 1000,
-            product_category: 'food',
-            product_detail: '아삭한 사과',
-            stock: 50,
-          },
-          {
-            id: 2,
-            product_name: '키보드',
-            product_price: 39000,
-            product_category: 'tech',
-            product_detail: '기계식 키보드',
-            stock: 10,
-          },
-        ]);
-      });
+        setProducts([]);
+        setError('상품 목록을 불러오지 못했습니다.');
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const filtered =
@@ -58,7 +47,23 @@ const MainPage = () => {
             </Button>
           ))}
         </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
+        {isLoading && (
+          <div className='rounded-xl border border-gray-200 bg-white px-6 py-16 text-center text-gray-500'>
+            상품을 불러오는 중입니다.
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className='rounded-xl border border-red-200 bg-red-50 px-6 py-16 text-center text-red-600'>
+            {error}
+          </div>
+        )}
+        {!isLoading && !error && filtered.length === 0 && (
+          <div className='rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center text-gray-500'>
+            등록된 상품이 없습니다.
+          </div>
+        )}
+        {!isLoading && !error && filtered.length > 0 && (
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
           {filtered.map((p) => (
             <div
               key={p.id}
@@ -84,6 +89,7 @@ const MainPage = () => {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

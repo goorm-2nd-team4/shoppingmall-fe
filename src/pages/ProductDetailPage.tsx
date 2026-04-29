@@ -10,23 +10,30 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [count, setCount] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    setIsLoading(true);
+    setError('');
+
     if (id) {
       productAPI
         .getDetail(id)
-        .then((res) => setProduct(res.data.data))
+        .then((res) => {
+          setProduct(res.data.data);
+        })
         .catch(() => {
-          setProduct({
-            id: Number(id),
-            product_name: '샘플 상품 ' + id,
-            product_price: 39000,
-            product_category: 'tech',
-            product_detail: '성우님 명세서에 맞춘 상품 상세 설명입니다.',
-            stock: 10,
-          });
-        });
+          setProduct(null);
+          setError('상품 정보를 불러오지 못했습니다.');
+        })
+        .finally(() => setIsLoading(false));
+      return;
     }
+
+    setProduct(null);
+    setError('잘못된 상품 경로입니다.');
+    setIsLoading(false);
   }, [id]);
 
   // 장바구니 담기 로직
@@ -40,8 +47,18 @@ const ProductDetailPage = () => {
     }
   };
 
-  if (!product)
+  if (isLoading)
     return <div className='p-10 text-center text-gray-500'>불러오는 중...</div>;
+
+  if (error)
+    return <div className='p-10 text-center text-red-600'>{error}</div>;
+
+  if (!product)
+    return (
+      <div className='p-10 text-center text-gray-500'>
+        상품 정보를 찾을 수 없습니다.
+      </div>
+    );
 
   return (
     <div className='min-h-screen bg-gray-50'>

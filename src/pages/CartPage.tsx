@@ -23,6 +23,8 @@ interface Cart {
 
 const CartPage = () => {
   const [cart, setCart] = useState<Cart | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const fetchCart = () =>
@@ -30,24 +32,13 @@ const CartPage = () => {
       .getList()
       .then((res) => {
         setCart(res.data.data);
+        setError('');
       })
       .catch(() => {
-        setCart({
-          cartId: 1,
-          items: [
-            {
-              cartItemId: 1,
-              productId: 1,
-              productName: '샘플 사과',
-              productCount: 2,
-              productPrice: 1000,
-              subtotal: 2000,
-            },
-          ],
-          totalPrice: 2000,
-          totalCount: 2,
-        });
-      });
+        setCart(null);
+        setError('장바구니를 불러오지 못했습니다.');
+      })
+      .finally(() => setIsLoading(false));
 
   useEffect(() => {
     fetchCart();
@@ -74,6 +65,17 @@ const CartPage = () => {
       <Header />
       <div className='max-w-2xl mx-auto px-4 py-10'>
         <Text className='text-2xl font-bold mb-6 block'>장바구니</Text>
+        {isLoading && (
+          <div className='rounded-lg border border-gray-200 bg-white py-20 text-center text-gray-500'>
+            장바구니를 불러오는 중입니다.
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className='rounded-lg border border-red-200 bg-red-50 py-20 text-center text-red-600'>
+            {error}
+          </div>
+        )}
+        {!isLoading && !error && (
         <div className='flex flex-col gap-4'>
           {cart?.items.map((item) => (
             <div
@@ -121,6 +123,7 @@ const CartPage = () => {
             </Button>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

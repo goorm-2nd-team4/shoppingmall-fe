@@ -5,6 +5,12 @@ import Header from '../components/Header';
 import { productAPI } from '../api';
 import { Product } from '../types';
 
+const CATEGORY_OPTIONS = [
+  { value: 'all', label: '전체' },
+  { value: '식품', label: '식품' },
+  { value: '전자제품', label: '전자제품' },
+] as const;
+
 const MainPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState('all');
@@ -29,21 +35,25 @@ const MainPage = () => {
   const filtered =
     category === 'all'
       ? products
-      : products.filter((p) => p.product_category === category);
+      : products.filter((p) =>
+          category === '전자제품'
+            ? ['전자제품', '전자기기'].includes(p.product_category)
+            : p.product_category === category,
+        );
 
   return (
     <div className='min-h-screen bg-gray-50'>
       <Header />
       <div className='max-w-6xl mx-auto px-4'>
         <div className='flex gap-2 mb-6'>
-          {['all', 'food', 'tech'].map((cat) => (
+          {CATEGORY_OPTIONS.map((cat) => (
             <Button
-              key={cat}
-              variant={category === cat ? 'fill' : 'outline'}
+              key={cat.value}
+              variant={category === cat.value ? 'fill' : 'outline'}
               color='primary'
-              onClick={() => setCategory(cat)}
+              onClick={() => setCategory(cat.value)}
             >
-              {cat === 'all' ? '전체' : cat === 'food' ? '식품' : '전자기기'}
+              {cat.label}
             </Button>
           ))}
         </div>

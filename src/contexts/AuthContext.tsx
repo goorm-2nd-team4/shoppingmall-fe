@@ -21,9 +21,9 @@ const clearAuthStorage = () => {
 
 const normalizeUser = (data: any): User => ({
   id: data.id,
-  user_email: data.user_email,
-  user_name: data.user_name,
-  user_role: data.user_role,
+  user_email: data.user_email ?? data.email,
+  user_name: data.user_name ?? data.name,
+  user_role: data.user_role ?? data.role,
 });
 
 /**
@@ -35,10 +35,13 @@ const normalizeUser = (data: any): User => ({
  */
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? (JSON.parse(saved) as User) : null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
-  /** 새로고침 시 localStorage로부터 유저 복원 */
+  /** 새로고침 시 API로 유저 정보 검증 및 갱신 */
   useEffect(() => {
     const token = localStorage.getItem('token');
 

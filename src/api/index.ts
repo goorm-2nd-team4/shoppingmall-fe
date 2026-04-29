@@ -2,9 +2,9 @@ import axios from 'axios';
 import { SignupRequest, LoginRequest, ProductFormData } from '../types';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
-const baseURL = `${
-  (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '')
-}/api`;
+const baseURL = `${(
+  import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
+).replace(/\/$/, '')}/api`;
 
 const api = axios.create({
   baseURL,

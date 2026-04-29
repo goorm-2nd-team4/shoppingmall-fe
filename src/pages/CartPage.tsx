@@ -76,53 +76,55 @@ const CartPage = () => {
           </div>
         )}
         {!isLoading && !error && (
-        <div className='flex flex-col gap-4'>
-          {cart?.items.map((item) => (
-            <div
-              key={item.cartItemId}
-              className='bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center shadow-sm'
-            >
-              <div>
-                <Text className='font-bold text-lg block'>
-                  {item.productName}
-                </Text>
-                <Text className='text-gray-500'>
-                  {item.productCount}개 | {item.subtotal.toLocaleString()}원
+          <div className='flex flex-col gap-4'>
+            {cart?.items.map((item) => (
+              <div
+                key={item.cartItemId}
+                className='bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center shadow-sm'
+              >
+                <div>
+                  <Text className='font-bold text-lg block'>
+                    {item.productName}
+                  </Text>
+                  <Text className='text-gray-500'>
+                    {item.productCount}개 | {item.subtotal.toLocaleString()}원
+                  </Text>
+                </div>
+                <Button
+                  variant='ghost'
+                  className='text-red-500 p-2 hover:bg-red-50'
+                  onClick={() =>
+                    cartAPI.delete(item.cartItemId).then(fetchCart)
+                  }
+                >
+                  <TrashIcon size={20} />
+                </Button>
+              </div>
+            ))}
+
+            {/* 장바구니가 비었을 때 메시지 */}
+            {cart?.items.length === 0 && (
+              <div className='text-center py-20 bg-white rounded-lg border border-dashed border-gray-300'>
+                <Text className='text-gray-400'>장바구니가 비어 있습니다.</Text>
+              </div>
+            )}
+
+            <div className='mt-6 p-6 bg-white border border-gray-200 rounded-xl shadow-md'>
+              <div className='flex justify-between items-center mb-6'>
+                <Text className='text-lg text-gray-600'>총 결제 금액</Text>
+                <Text className='text-2xl font-bold text-blue-600'>
+                  {cart?.totalPrice.toLocaleString()}원
                 </Text>
               </div>
               <Button
-                variant='ghost'
-                className='text-red-500 p-2 hover:bg-red-50'
-                onClick={() => cartAPI.delete(item.cartItemId).then(fetchCart)}
+                color='primary'
+                className='w-full h-14 text-lg font-bold'
+                onClick={handleOrderClick} // 분리한 핸들러 연결
               >
-                <TrashIcon size={20} />
+                주문하기
               </Button>
             </div>
-          ))}
-
-          {/* 장바구니가 비었을 때 메시지 */}
-          {cart?.items.length === 0 && (
-            <div className='text-center py-20 bg-white rounded-lg border border-dashed border-gray-300'>
-              <Text className='text-gray-400'>장바구니가 비어 있습니다.</Text>
-            </div>
-          )}
-
-          <div className='mt-6 p-6 bg-white border border-gray-200 rounded-xl shadow-md'>
-            <div className='flex justify-between items-center mb-6'>
-              <Text className='text-lg text-gray-600'>총 결제 금액</Text>
-              <Text className='text-2xl font-bold text-blue-600'>
-                {cart?.totalPrice.toLocaleString()}원
-              </Text>
-            </div>
-            <Button
-              color='primary'
-              className='w-full h-14 text-lg font-bold'
-              onClick={handleOrderClick} // 분리한 핸들러 연결
-            >
-              주문하기
-            </Button>
           </div>
-        </div>
         )}
       </div>
     </div>

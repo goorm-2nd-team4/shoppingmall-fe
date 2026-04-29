@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * @param user_email
    * @param user_password
    */
-  
+
   const login = async (user_email: string, user_password: string) => {
     const res = await authAPI.login({
       user_email,

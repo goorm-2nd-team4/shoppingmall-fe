@@ -20,7 +20,6 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-
   /**
    * 폼 제출 핸들러
    * - 입력값 검증
@@ -56,7 +55,7 @@ export default function SignupPage() {
     }
   };
 
-    /**
+  /**
    * 회원가입 폼
    * - 이름, 이메일, 비밀번호, 비밀번호 확인 입력 필드
    * - 에러 메시지 표시
@@ -160,4 +159,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

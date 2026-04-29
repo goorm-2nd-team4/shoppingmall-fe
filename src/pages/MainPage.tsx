@@ -64,31 +64,33 @@ const MainPage = () => {
         )}
         {!isLoading && !error && filtered.length > 0 && (
           <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
-          {filtered.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => navigate(`/product/${p.id}`)}
-              className='bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg transition-all'
-            >
-              <Badge color='primary' className='mb-3'>
-                {p.product_category}
-              </Badge>
-              <Text className='block font-bold text-lg mb-1'>
-                {p.product_name}
-              </Text>
-              <Text className='block text-blue-600 font-bold text-xl'>
-                {p.product_price.toLocaleString()}원
-              </Text>
-              <div className='mt-4 pt-4 border-t border-gray-100 flex justify-between items-center'>
-                {/* product_stock에서 stock으로 변경됨 */}
-                <Text className='text-sm text-gray-500'>재고: {p.stock}개</Text>
-                <Text className='text-blue-500 text-sm font-medium'>
-                  상세보기 →
+            {filtered.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => navigate(`/product/${p.id}`)}
+                className='bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg transition-all'
+              >
+                <Badge color='primary' className='mb-3'>
+                  {p.product_category}
+                </Badge>
+                <Text className='block font-bold text-lg mb-1'>
+                  {p.product_name}
                 </Text>
+                <Text className='block text-blue-600 font-bold text-xl'>
+                  {p.product_price.toLocaleString()}원
+                </Text>
+                <div className='mt-4 pt-4 border-t border-gray-100 flex justify-between items-center'>
+                  {/* product_stock에서 stock으로 변경됨 */}
+                  <Text className='text-sm text-gray-500'>
+                    재고: {p.stock}개
+                  </Text>
+                  <Text className='text-blue-500 text-sm font-medium'>
+                    상세보기 →
+                  </Text>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

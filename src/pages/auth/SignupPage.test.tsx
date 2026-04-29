@@ -3,8 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import SignupPage from './SignupPage';
 
-
-
 const renderSignupPage = () =>
   render(
     <MemoryRouter>
@@ -13,8 +11,6 @@ const renderSignupPage = () =>
   );
 
 describe('SignupPage', () => {
-
-
   it('폼 렌더링', () => {
     renderSignupPage();
 
@@ -40,8 +36,7 @@ describe('SignupPage', () => {
     await user.type(screen.getByPlaceholderText('비밀번호 확인'), 'password');
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
-    await waitFor(() => {
-    });
+    await waitFor(() => {});
   });
 
   it('비밀번호 다르면 에러 출력', async () => {
@@ -76,6 +71,5 @@ describe('SignupPage', () => {
       'passwordDiff',
     );
     await user.click(screen.getByRole('button', { name: '회원가입' }));
-
   });
 });

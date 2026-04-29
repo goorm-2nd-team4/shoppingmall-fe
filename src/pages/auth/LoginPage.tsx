@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-    /**
+  /**
    * 컴포넌트 마운트 시 로컬 스토리지에서 토큰과 유저 정보 확인
    * - 토큰이 유효하면 로그인 상태 유지
    * - 토큰이 없거나 유효하지 않으면 로그인 상태 초기화
@@ -121,4 +121,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

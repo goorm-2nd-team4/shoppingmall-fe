@@ -38,7 +38,7 @@ const MainPage = () => {
       : products.filter((p) =>
           category === '전자제품'
             ? ['전자제품', '전자기기'].includes(p.product_category)
-            : p.product_category === category
+            : p.product_category === category,
         );
 
   return (

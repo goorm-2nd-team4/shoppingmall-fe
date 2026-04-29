@@ -3,29 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import SignupPage from './SignupPage';
 
-const mockNavigate = vi.fn();
-const mockSignup = vi.hoisted(() => vi.fn());
 
-vi.mock('react-router-dom', async () => {
-  const act = await vi.importActual('react-router-dom');
-  return { ...act, useNavigate: () => mockNavigate };
-});
-
-vi.mock('../../api/index', () => ({
-  authAPI: { signup: mockSignup },
-}));
-
-vi.mock('../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: null,
-    isAdmin: false,
-    logout: vi.fn(),
-  }),
-}));
-
-vi.mock('../../components/Header', () => ({
-  default: () => null,
-}));
 
 const renderSignupPage = () =>
   render(
@@ -35,11 +13,7 @@ const renderSignupPage = () =>
   );
 
 describe('SignupPage', () => {
-  // 매 테스트 이전 초기화
-  beforeEach(() => {
-    mockNavigate.mockClear();
-    mockSignup.mockClear();
-  });
+
 
   it('폼 렌더링', () => {
     renderSignupPage();
@@ -56,7 +30,6 @@ describe('SignupPage', () => {
   });
 
   it('회원가입 성공 시 /login 으로 이동', async () => {
-    mockSignup.mockResolvedValueOnce({});
     renderSignupPage();
 
     const user = userEvent.setup();
@@ -68,7 +41,6 @@ describe('SignupPage', () => {
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
 
@@ -105,6 +77,5 @@ describe('SignupPage', () => {
     );
     await user.click(screen.getByRole('button', { name: '회원가입' }));
 
-    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

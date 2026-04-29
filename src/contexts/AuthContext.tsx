@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type { User } from '../types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
@@ -21,37 +22,18 @@ const AuthContext = createContext<AuthContextType | null>(null);
  * - 로그아웃: API 호출 후 토큰과 유저 정보 제거
  * - 인증 상태와 로그인/로그아웃 함수를 하위 컴포넌트에 제공
  */
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   /** 새로고침 시 localStorage로부터 유저 복원 */
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setIsLoading(false);
-      return;
+    const token = localStorage.getItem('user');
+    if (token) {
+      setUser(JSON.parse(token));
     }
-
-    userAPI
-      .getMe()
-      .then((res) => {
-        const { id, email, name, role } = res.data.data;
-        const user: User = {
-          id,
-          user_email: email,
-          user_name: name,
-          user_role: role,
-        };
-        localStorage.setItem('user', JSON.stringify(user));
-        setUser(user);
-      })
-      .catch(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
-      })
-      .finally(() => setIsLoading(false));
+    setIsLoading(false);
   }, []);
 
   /**
@@ -59,18 +41,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * @param user_email
    * @param user_password
    */
+  
   const login = async (user_email: string, user_password: string) => {
-    const res = await authAPI.login({ user_email, user_password });
-    const { token, ...userData } = res.data.data;
+    const res = await axios.post('/api/auth/login', {
+      user_email,
+      user_password,
+    });
+
+    const {
+      id,
+      user_email: email,
+      user_name,
+      user_role,
+      token,
+    } = res.data.data;
+
+    const user: User = { id, user_email: email, user_name, user_role };
 
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(user));
+    setUser(user);
   };
 
   /**
    * AuthAPI의 로그아웃 호출 후 토큰과 유저 정보 제거
    */
+
   const logout = async () => {
     await authAPI.logout();
     localStorage.removeItem('token');
@@ -81,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * AuthContext.Provider로 인증 상태와 로그인/로그아웃 함수를 하위 컴포넌트에 제공
    */
+
   return (
     <AuthContext.Provider
       value={{

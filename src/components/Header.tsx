@@ -6,6 +6,19 @@ import { useAuth } from '../contexts/AuthContext';
 const Header = () => {
   const navigate = useNavigate();
   const { user, isAdmin, logout } = useAuth();
+
+  const handleUserAction = async () => {
+    if (user) {
+      // 로그인 상태라면 로그아웃 실행
+      await logout();
+      alert('로그아웃 되었습니다.');
+      navigate('/');
+    } else {
+      // 비로그인 상태라면 로그인 페이지로 이
+      navigate('/login');
+    }
+  };
+
   return (
     <header className='flex justify-between items-center p-4 border-b border-gray-200 mb-6 bg-white shadow-sm'>
       <div className='cursor-pointer' onClick={() => navigate('/')}>
@@ -20,10 +33,11 @@ const Header = () => {
           <ShoppingCartIcon size={20} />{' '}
           <span className='hidden sm:inline'>장바구니</span>
         </Button>
+
         {!user && (
           <Button
             variant='ghost'
-            onClick={() => navigate('/login')}
+            onClick={handleUserAction}
             className='flex items-center gap-1'
           >
             <UserIcon size={20} />{' '}
@@ -41,7 +55,7 @@ const Header = () => {
               }
             />
             <Menu.Popup>
-              <Menu.Item onClick={logout}>로그아웃</Menu.Item>
+              <Menu.Item onClick={handleUserAction}>로그아웃</Menu.Item>
             </Menu.Popup>
           </Menu.Root>
         )}
@@ -63,7 +77,7 @@ const Header = () => {
                 회원 관리
               </Menu.Item>
               <Menu.Separator />
-              <Menu.Item onClick={logout}>로그아웃</Menu.Item>
+              <Menu.Item onClick={handleUserAction}>로그아웃</Menu.Item>
             </Menu.Popup>
           </Menu.Root>
         )}
@@ -71,4 +85,5 @@ const Header = () => {
     </header>
   );
 };
+
 export default Header;

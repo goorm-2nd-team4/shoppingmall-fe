@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Card, TextInput, Button } from '@vapor-ui/core';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import Header from '../../components/Header';
  * - 이름, 이메일, 비밀번호, 비밀번호 확인 입력 폼
  * - 회원가입 API 호출 후 로그인 페이지로 리다이렉트
  */
+
 export default function SignupPage() {
   const navigate = useNavigate();
 
@@ -19,11 +21,13 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+
   /**
    * 폼 제출 핸들러
    * - 입력값 검증
    * - 회원가입 API 호출
    */
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -36,11 +40,11 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      await authAPI.signup({
+      await axios.post('/api/auth/register', {
+        user_name: userName,
         user_email: userEmail,
         user_password: userPassword,
         user_password_confirm: userPasswordConfirm,
-        user_name: userName,
       });
       navigate('/login');
     } catch (err: any) {
@@ -53,7 +57,7 @@ export default function SignupPage() {
     }
   };
 
-  /**
+    /**
    * 회원가입 폼
    * - 이름, 이메일, 비밀번호, 비밀번호 확인 입력 필드
    * - 에러 메시지 표시
@@ -157,3 +161,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

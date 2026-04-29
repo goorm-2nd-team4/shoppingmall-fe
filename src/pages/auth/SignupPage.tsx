@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { Card, TextInput, Button } from '@vapor-ui/core';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -40,7 +39,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      await axios.post('/api/auth/register', {
+      await authAPI.signup({
         user_name: userName,
         user_email: userEmail,
         user_password: userPassword,

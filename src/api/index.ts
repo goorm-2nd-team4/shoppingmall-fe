@@ -1,15 +1,19 @@
 import axios from 'axios';
 import { SignupRequest, LoginRequest, ProductFormData } from '../types';
 
+const DEFAULT_API_BASE_URL = 'http://localhost:8080';
+const baseURL = `${
+  (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '')
+}/api`;
+
 const api = axios.create({
-  // 백엔드 서버 들어갈 곳
-  baseURL: 'http://localhost:8080/api',
+  baseURL,
 });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -45,29 +49,23 @@ export const cartAPI = {
 };
 
 export const adminMemberAPI = {
-  // GET /api/admin/members → { totalCount, adminCount, members: MemberResponse[] }
   getAll: () => api.get('/admin/members'),
 
-  // PATCH /api/admin/members/{id}/role → body: { role: 'USER' | 'ADMIN' }
   updateRole: (id: number, role: 'USER' | 'ADMIN') =>
     api.patch(`/admin/members/${id}/role`, { role }),
 
-  // DELETE /api/admin/members/{id}
   delete: (id: number) => api.delete(`/admin/members/${id}`),
 };
 
 /** 주문 관련 */
 export const orderAPI = {
-  // 주문 생성
   create: (data: {
     items: { productId: number; productCount: number }[];
     fromCart: boolean;
   }) => api.post('/orders', data),
 
-  // 내 주문 내역 조회
   getMyOrders: () => api.get('/orders/my'),
 
-  // 주문 상세 조회
   getDetail: (id: number) => api.get(`/orders/${id}`),
 };
 

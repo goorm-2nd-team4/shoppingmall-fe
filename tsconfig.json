@@ -13,6 +13,6 @@
     "allowJs": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts", "**/*.js", "**/*.jsx"],
   "exclude": ["node_modules", "dist", "build", "coverage"]
 }

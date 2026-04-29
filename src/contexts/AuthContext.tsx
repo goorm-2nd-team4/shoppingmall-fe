@@ -1,8 +1,7 @@
-import axios from 'axios';
 import type { User } from '../types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
-import { authAPI, userAPI } from '../api/index';
+import { authAPI } from '../api/index';
 
 /** Context 타입 */
 interface AuthContextType {
@@ -43,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   
   const login = async (user_email: string, user_password: string) => {
-    const res = await axios.post('/api/auth/login', {
+    const res = await authAPI.login({
       user_email,
       user_password,
     });

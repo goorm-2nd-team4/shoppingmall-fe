@@ -1,7 +1,7 @@
 import type { User } from '../types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
-import { authAPI } from '../api/index';
+import { authAPI, userAPI } from '../api/index';
 
 /** Context 타입 */
 interface AuthContextType {
@@ -13,6 +13,18 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+const clearAuthStorage = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+const normalizeUser = (data: any): User => ({
+  id: data.id,
+  user_email: data.user_email,
+  user_name: data.user_name,
+  user_role: data.user_role,
+});
 
 /**
  * 인증 상태를 관리하는 Context Provider
@@ -28,11 +40,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /** 새로고침 시 localStorage로부터 유저 복원 */
   useEffect(() => {
-    const token = localStorage.getItem('user');
-    if (token) {
-      setUser(JSON.parse(token));
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+
+    userAPI
+      .getMe()
+      .then((res) => {
+        const restoredUser = normalizeUser(res.data.data);
+        localStorage.setItem('user', JSON.stringify(restoredUser));
+        setUser(restoredUser);
+      })
+      .catch(() => {
+        clearAuthStorage();
+        setUser(null);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   /**
@@ -47,15 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user_password,
     });
 
-    const {
-      id,
-      user_email: email,
-      user_name,
-      user_role,
-      token,
-    } = res.data.data;
-
-    const user: User = { id, user_email: email, user_name, user_role };
+    const { token, ...userData } = res.data.data;
+    const user = normalizeUser(userData);
 
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
@@ -68,8 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await authAPI.logout();
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthStorage();
     setUser(null);
   };
 

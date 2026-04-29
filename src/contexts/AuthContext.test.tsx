@@ -3,6 +3,23 @@ import { AuthProvider, useAuth } from './AuthContext';
 
 const mockLogin = vi.hoisted(() => vi.fn());
 const mockLogout = vi.hoisted(() => vi.fn());
+const mockGetMe = vi.hoisted(() => vi.fn());
+const storage = vi.hoisted(() => {
+  let store: Record<string, string> = {};
+
+  return {
+    clear: () => {
+      store = {};
+    },
+    getItem: (key: string) => store[key] ?? null,
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+  };
+});
 
 vi.mock('../api/index', () => ({
   authAPI: {
@@ -10,16 +27,24 @@ vi.mock('../api/index', () => ({
     logout: mockLogout,
   },
   userAPI: {
-    getMe: vi.fn(),
+    getMe: mockGetMe,
   },
 }));
 
 describe('AuthContext', () => {
+  beforeAll(() => {
+    Object.defineProperty(window, 'localStorage', {
+      value: storage,
+      configurable: true,
+    });
+  });
+
   // 매 테스트 이전에 로컬 스토리지 초기화
   beforeEach(() => {
     localStorage.clear();
     mockLogin.mockClear();
     mockLogout.mockClear();
+    mockGetMe.mockClear();
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -30,6 +55,49 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {});
     expect(result.current.user).toBeNull();
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('token 이 있으면 getMe 성공 후 user 복원', async () => {
+    localStorage.setItem('token', 'mockToken');
+    mockGetMe.mockResolvedValueOnce({
+      data: {
+        data: {
+          id: 1,
+          user_email: 'user@goorm.io',
+          user_name: '테스트',
+          user_role: 'USER',
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await act(async () => {});
+
+    expect(mockGetMe).toHaveBeenCalled();
+    expect(result.current.user?.user_email).toBe('user@goorm.io');
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('token 이 있지만 getMe 실패 시 인증 정보 제거', async () => {
+    localStorage.setItem('token', 'expiredToken');
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        id: 1,
+        user_email: 'stale@goorm.io',
+        user_name: '만료 사용자',
+        user_role: 'USER',
+      }),
+    );
+    mockGetMe.mockRejectedValueOnce(new Error('Unauthorized'));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await act(async () => {});
+
+    expect(result.current.user).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('user')).toBeNull();
     expect(result.current.isLoading).toBe(false);
   });
 

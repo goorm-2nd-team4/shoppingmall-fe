@@ -5,12 +5,6 @@ import Header from '../components/Header';
 import { productAPI } from '../api';
 import { Product } from '../types';
 
-const CATEGORY_OPTIONS = [
-  { value: 'all', label: '전체' },
-  { value: '식품', label: '식품' },
-  { value: '전자제품', label: '전자제품' },
-] as const;
-
 const MainPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [category, setCategory] = useState('all');
@@ -35,18 +29,24 @@ const MainPage = () => {
   const filtered =
     category === 'all'
       ? products
-      : products.filter((p) =>
-          category === '전자제품'
-            ? ['전자제품', '전자기기'].includes(p.product_category)
-            : p.product_category === category,
-        );
+      : products.filter((p) => p.product_category === category);
+
+  const categoryOptions = [
+    { value: 'all', label: '전체' },
+    ...Array.from(
+      new Set(products.map((product) => product.product_category)),
+    ).map((categoryName) => ({
+      value: categoryName,
+      label: categoryName,
+    })),
+  ];
 
   return (
     <div className='min-h-screen bg-gray-50'>
       <Header />
       <div className='max-w-6xl mx-auto px-4'>
-        <div className='flex gap-2 mb-6'>
-          {CATEGORY_OPTIONS.map((cat) => (
+        <div className='mb-6 flex flex-wrap gap-2'>
+          {categoryOptions.map((cat) => (
             <Button
               key={cat.value}
               variant={category === cat.value ? 'fill' : 'outline'}

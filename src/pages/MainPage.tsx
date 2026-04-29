@@ -33,12 +33,12 @@ const MainPage = () => {
 
   const categoryOptions = [
     { value: 'all', label: '전체' },
-    ...Array.from(new Set(products.map((product) => product.product_category))).map(
-      (categoryName) => ({
+    ...Array.from(
+      new Set(products.map((product) => product.product_category)),
+    ).map((categoryName) => ({
       value: categoryName,
       label: categoryName,
-      }),
-    ),
+    })),
   ];
 
   return (
